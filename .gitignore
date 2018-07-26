@@ -1,0 +1,20 @@
+# IDE
+*.iml
+.idea/
+
+# Android
+*.apk
+*.ap_
+*.dex
+*.class
+bin/
+gen/
+out/
+.gradle/
+build/
+local.properties
+.navigation/
+captures/
+
+# Google Services (e.g. APIs or Firebase)
+google-services.json
