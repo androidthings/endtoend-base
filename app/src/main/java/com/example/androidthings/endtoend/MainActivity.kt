@@ -16,15 +16,9 @@
 
 package com.example.androidthings.endtoend
 
-import android.app.Activity
-import android.content.ContentValues.TAG
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
-import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.things.pio.Gpio
-import com.google.android.things.pio.GpioCallback
-import com.google.android.things.pio.PeripheralManager
-import java.io.IOException
 
 /**
  * Skeleton of an Android Things activity.

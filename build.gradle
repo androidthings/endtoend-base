@@ -17,7 +17,15 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.2.51'
+    ext {
+        appcompatVersion = '1.0.0-beta01'
+        constraintlayoutVersion = '1.1.2'
+        espressoVersion = '3.1.0-alpha4'
+        junitVersion = '4.12'
+        kotlin_version = '1.2.51'
+        lifecycleVersion = '2.0.0-beta01'
+        runnerVersion = '1.1.0-alpha4'
+    }
     repositories {
         google()
         jcenter()
