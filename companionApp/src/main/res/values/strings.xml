@@ -16,4 +16,7 @@
 
 <resources>
     <string name="app_name">End to End Base</string>
+
+    <string name="not_signed_in">You are not signed in</string>
+    <string name="signed_in_as">You are signed in as %s</string>
 </resources>

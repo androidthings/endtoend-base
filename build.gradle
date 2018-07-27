@@ -21,9 +21,14 @@ buildscript {
         appcompatVersion = '1.0.0-beta01'
         constraintlayoutVersion = '1.1.2'
         espressoVersion = '3.1.0-alpha4'
+        firebaseAuthVersion = '16.0.2'
+        firebaseCoreVersion = '16.0.1'
+        firebaseUiVersion = '4.0.0'
+        googleServicesVersion = '4.0.1'
         junitVersion = '4.12'
         kotlin_version = '1.2.51'
         lifecycleVersion = '2.0.0-beta01'
+        materialVersion = '1.0.0-beta01'
         runnerVersion = '1.1.0-alpha4'
     }
     repositories {
@@ -33,6 +38,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:3.2.0-beta04'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.google.gms:google-services:$googleServicesVersion"
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
