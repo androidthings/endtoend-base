@@ -27,8 +27,28 @@ const app = smarthome({
   debug: true,
 });
 
+const {AuthenticationClient} = require('auth0');
+const auth0 = new AuthenticationClient(require('./auth0-config.json'));
+
+const getUser = async (headers) => {
+  // Authorization: "Bearer 123ABC"
+  const accessToken = headers.authorization.substr(7);
+  const userProfile = await auth0.getProfile(accessToken)
+  // {
+  //   sub: 'google-oauth2|1234567890'
+  // }
+  return userProfile.sub
+}
+
 app.onSync(async (body, headers) => {
-  const userid = headers.authorization.substr(7);
+  const userid = await getUser(headers)
+  // Check the userid already exists
+  const userDoc = await db.collection('users').doc(userid).get();
+  if (!userDoc.exists) {
+    console.error(`User ${userid} has not created an account, so there are no devices`)
+    return {};
+  }
+
   const userdevices = db.collection('users').doc(userid).collection('devices');
   const snapshot = await userdevices.get()
   const devices = []
@@ -66,12 +86,11 @@ app.onSync(async (body, headers) => {
 const queryDevice = async (userid, deviceId) => {
   const devicestates = db.collection('users').doc(userid).collection('devices').doc(deviceId)
   const doc = await devicestates.get()
-  console.log(doc.data().states)
   return doc.data().states
 }
 
 app.onQuery(async (body, headers) => {
-  const userid = headers.authorization.substr(7);
+  const userid = await getUser(headers)
   const {requestId} = body;
   const payload = {
     devices: {},
@@ -92,7 +111,7 @@ app.onQuery(async (body, headers) => {
 });
 
 app.onExecute(async (body, headers) => {
-  const userid = headers.authorization.substr(7);
+  const userid = await getUser(headers)
   const {requestId} = body;
   const payload = {
     commands: [{
