@@ -33,3 +33,17 @@ for your project id.
 ```
 
 To use it, add a new device while the sample is active.
+
+#### Report State
+The Report State feature allows a cloud integration to proactively provide the
+current state of devices to the Home Graph without a `QUERY` request. This is
+done securely through [JWT (JSON web tokens)](https://jwt.io/).
+
+1. Navigate to the [Google Cloud Console API & Services page](https://console.cloud.google.com/apis/credentials)
+1. Select **Create Credentials** and create a **Service account key**
+1. Create the account and download a JSON file.
+   Save this as `service-key.json`.
+
+The sample already includes support for report state. To use it, create a device
+in the web frontend. Then click on the arrow icon in the top-right corner. It will
+start reporting state when the state changes locally.

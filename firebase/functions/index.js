@@ -26,6 +26,7 @@ const db = admin.firestore();
 const app = smarthome({
   debug: true,
   key: require('./api-key.json').key,
+  jwt: require('./service-key.json'),
 });
 
 const {AuthenticationClient} = require('auth0');
@@ -168,4 +169,25 @@ exports.onDeviceDelete = functions.firestore
       // Resync the device list
       console.info(`New device ${context.params.deviceId} deleted for ${context.params.userId}`)
       return app.requestSync(context.params.userId)
+    });
+
+exports.onDeviceStateUpdate = functions.firestore
+    .document('users/{userId}/devices/{deviceId}')
+    .onUpdate(async (change, context) => {
+      // Report the state for this device
+      const userId = context.params.userId
+      const deviceId = context.params.deviceId
+      const deviceStates = await queryDevice(userId, deviceId)
+      console.info(`State changed for device ${context.params.deviceId}`)
+      return app.reportState({
+        requestId: '123ABC', // Can be any identifier
+        agentUserId: userId,
+        payload: {
+          devices: {
+            states: {
+              [deviceId]: deviceStates
+            }
+          }
+        }
+      })
     });
