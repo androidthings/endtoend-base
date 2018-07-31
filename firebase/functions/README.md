@@ -11,3 +11,25 @@ It is used to setup the APIs for Auth0. Make sure it fits the format below.
     "domain": "<domain>.auth0.com"
 }
 ```
+
+## HomeGraph APIs
+### Request Sync
+The Request Sync feature allows a cloud integration to send a request to the Home Graph
+to send a new SYNC request.
+
+1. Navigate to the
+[Google Cloud Console API Manager](https://console.developers.google.com/apis)
+for your project id.
+1. Enable the [HomeGraph API](https://console.cloud.google.com/apis/api/homegraph.googleapis.com/overview). This will be used to request a new sync and to report the state back to the HomeGraph.
+1. Click Credentials
+1. Click 'Create credentials'
+1. Click 'API key'
+1. Copy the API key shown and insert it in a file called `api-key.json`.
+
+```
+{
+    key: '<api key>'
+}
+```
+
+To use it, add a new device while the sample is active.
