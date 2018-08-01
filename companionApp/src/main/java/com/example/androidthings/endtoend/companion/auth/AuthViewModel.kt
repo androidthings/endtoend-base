@@ -24,21 +24,27 @@ import com.google.firebase.auth.UserInfo
 
 class AuthViewModel(private val authProvider: AuthProvider): ViewModel() {
 
-    private var authState = AuthState(true, false, null) // Initializing state
-
     // We don't want clients to be able to set what is stored in our MutableLiveData, so we expose
     // it as a regular LiveData instead.
-    private val _authStateLiveData = MutableLiveData<AuthState>()
-    val authStateLiveData: LiveData<AuthState>
-        get() = _authStateLiveData
+    private val _authStateModelLiveData = MutableLiveData<AuthStateModel>()
+    val authStateModelLiveData: LiveData<AuthStateModel>
+        get() = _authStateModelLiveData
+
+    private val _authUiModelLiveData = MutableLiveData<AuthUiModel>()
+    val authUiModelLiveData: LiveData<AuthUiModel>
+        get() = _authUiModelLiveData
+
+    private var userInfo: UserInfo? = null
+    private var authUiModel = AuthUiModel(true, false, null) // Initializing
 
     private val userObserver = Observer<UserInfo?> { user ->
-        setAuthState(authState.copy(initializing = false, user = user))
+        resolveAuthStateModel(user)
+        setAuthUiModel(authUiModel.copy(initializing = false, user = user))
     }
 
     init {
         // Show initializing state
-        setAuthState(authState)
+        setAuthUiModel(authUiModel)
         // Watch for changes to signed in user
         authProvider.userLiveData.observeForever(userObserver)
     }
@@ -48,34 +54,64 @@ class AuthViewModel(private val authProvider: AuthProvider): ViewModel() {
         authProvider.userLiveData.removeObserver(userObserver)
     }
 
-    private fun setAuthState(state: AuthState) {
-        authState = state
-        _authStateLiveData.value = authState
+    private fun setAuthUiModel(model: AuthUiModel) {
+        authUiModel = model
+        _authUiModelLiveData.value = authUiModel
     }
 
+    // Compare new UserInfo with the previous the determine if (and what kind of) change occurred.
+    private fun resolveAuthStateModel(newInfo: UserInfo?) {
+        val oldUid = userInfo?.uid
+        val newUid = newInfo?.uid
+        userInfo = newInfo
+
+        if (oldUid != newUid) {
+            val stateChange = when {
+                oldUid == null -> AuthStateChange.SIGNED_IN
+                newUid == null -> AuthStateChange.SIGNED_OUT
+                else -> AuthStateChange.USER_CHANGED
+            }
+            _authStateModelLiveData.value = AuthStateModel(stateChange, newInfo)
+        }
+    }
+
+    /** Initiates sign in action with the AuthProvider. */
     fun signIn() {
         // TODO maybe skip if we're initializing or already have a user
-        setAuthState(authState.copy(authInProgress = true))
+        setAuthUiModel(authUiModel.copy(authInProgress = true))
         authProvider.performSignIn()
     }
 
+    /** Initiates sign out action with the AuthProvider. */
     fun signOut() {
-        setAuthState(authState.copy(authInProgress = true))
+        setAuthUiModel(authUiModel.copy(authInProgress = true))
         authProvider.performSignOut()
     }
 
-    fun onAuthResult(result: AuthResult) {
-        setAuthState(authState.copy(authInProgress = false))
+    /** To be called by the AuthProvider with the result of an auth action. */
+    fun onAuthResult(result: AuthActionResult) {
+        setAuthUiModel(authUiModel.copy(authInProgress = false))
         // TODO maybe show a snackbar if result is FAIL
     }
 
-    data class AuthState(
+    enum class AuthActionResult {
+        SUCCESS, FAIL, CANCEL
+    }
+
+    /** Model describing the current authentication state and the change that resulted in it. */
+    data class AuthStateModel(
+        val authStateChange: AuthStateChange,
+        val user: UserInfo?
+    )
+
+    enum class AuthStateChange {
+        SIGNED_IN, SIGNED_OUT, USER_CHANGED
+    }
+
+    /** Model containing data for showing a UI around authentication state and actions. */
+    data class AuthUiModel(
         val initializing: Boolean,
         val authInProgress: Boolean,
         val user: UserInfo?
     )
-
-    enum class AuthResult {
-        SUCCESS, FAIL, CANCEL
-    }
 }

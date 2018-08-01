@@ -25,7 +25,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.androidthings.endtoend.companion.R
 import com.example.androidthings.endtoend.companion.ViewModelFactory
-import com.example.androidthings.endtoend.companion.auth.AuthViewModel.AuthState
+import com.example.androidthings.endtoend.companion.auth.AuthViewModel.AuthUiModel
 import kotlinx.android.synthetic.main.fragment_auth.auth_text
 import kotlinx.android.synthetic.main.fragment_auth.progress
 import kotlinx.android.synthetic.main.fragment_auth.sign_in
@@ -62,11 +62,11 @@ class AuthFragment : Fragment() {
         authViewModel = ViewModelProviders.of(requireActivity(), ViewModelFactory.instance)
             .get(AuthViewModel::class.java)
 
-        authViewModel.authStateLiveData.observe(this, Observer { state -> displayAuthState(state) })
+        authViewModel.authUiModelLiveData.observe(this, Observer { model -> bindAuthUi(model) })
     }
 
-    private fun displayAuthState(state: AuthState) {
-        if (state.initializing) {
+    private fun bindAuthUi(model: AuthUiModel) {
+        if (model.initializing) {
             progress.visibility = View.VISIBLE
             sign_in.visibility = View.GONE
             sign_out.visibility = View.GONE
@@ -79,13 +79,13 @@ class AuthFragment : Fragment() {
 
             sign_in.isEnabled = false
             sign_out.isEnabled = false
-            if (!state.authInProgress) {
-                sign_in.isEnabled = state.user == null
-                sign_out.isEnabled = state.user != null
+            if (!model.authInProgress) {
+                sign_in.isEnabled = model.user == null
+                sign_out.isEnabled = model.user != null
             }
 
-            if (state.user != null) {
-                auth_text.text = getString(R.string.signed_in_as, state.user.displayName)
+            if (model.user != null) {
+                auth_text.text = getString(R.string.signed_in_as, model.user.displayName)
             } else {
                 auth_text.setText(R.string.not_signed_in)
             }

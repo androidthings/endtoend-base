@@ -24,10 +24,11 @@ object FirebaseAuthProvider: AuthProvider() {
     private var authUiHelper: FirebaseAuthUiHelper? = null
 
     init {
-        firebaseAuth.addAuthStateListener {
-            _userLiveData.postValue(firebaseAuth.currentUser)
+        firebaseAuth.addAuthStateListener { auth ->
+            // Listener is invoked immediately after registration, when a user signs in, when the
+            // current user signs out, and when the current user changes.
+            _userLiveData.postValue(auth.currentUser)
         }
-        _userLiveData.postValue(firebaseAuth.currentUser)
     }
 
     /**

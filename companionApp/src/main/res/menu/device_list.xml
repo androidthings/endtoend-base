@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Copyright 2018 Google LLC
   ~
@@ -14,11 +15,11 @@
   ~ limitations under the License.
   -->
 
-<resources>
-    <string name="app_name">End to End Base</string>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <string name="sign_in">Sign in</string>
-    <string name="sign_out">Sign out</string>
-    <string name="not_signed_in">You are not signed in</string>
-    <string name="signed_in_as">You are signed in as %s</string>
-</resources>
+    <item
+        android:id="@+id/action_sign_out"
+        android:title="@string/sign_out"
+        app:showAsAction="never" />
+</menu>

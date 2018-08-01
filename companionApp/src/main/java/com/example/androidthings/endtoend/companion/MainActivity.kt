@@ -20,11 +20,16 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.findNavController
 import com.example.androidthings.endtoend.companion.auth.AuthViewModel
-import com.example.androidthings.endtoend.companion.auth.AuthViewModel.AuthResult.CANCEL
-import com.example.androidthings.endtoend.companion.auth.AuthViewModel.AuthResult.FAIL
-import com.example.androidthings.endtoend.companion.auth.AuthViewModel.AuthResult.SUCCESS
+import com.example.androidthings.endtoend.companion.auth.AuthViewModel.AuthActionResult.CANCEL
+import com.example.androidthings.endtoend.companion.auth.AuthViewModel.AuthActionResult.FAIL
+import com.example.androidthings.endtoend.companion.auth.AuthViewModel.AuthActionResult.SUCCESS
+import com.example.androidthings.endtoend.companion.auth.AuthViewModel.AuthStateChange.SIGNED_IN
+import com.example.androidthings.endtoend.companion.auth.AuthViewModel.AuthStateChange.SIGNED_OUT
+import com.example.androidthings.endtoend.companion.auth.AuthViewModel.AuthStateChange.USER_CHANGED
 import com.example.androidthings.endtoend.companion.auth.FirebaseAuthProvider
 import com.example.androidthings.endtoend.companion.auth.FirebaseAuthUiHelper
 import com.firebase.ui.auth.AuthUI
@@ -44,14 +49,27 @@ class MainActivity : AppCompatActivity(), FirebaseAuthUiHelper {
         setContentView(R.layout.activity_main)
 
         FirebaseAuthProvider.setAuthUiHelper(this)
+
         authViewModel = ViewModelProviders.of(this, ViewModelFactory.instance)
             .get(AuthViewModel::class.java)
+        val navController = findNavController(R.id.nav_host)
+        authViewModel.authStateModelLiveData.observe(this, Observer { state ->
+            val dest = when (state.authStateChange) {
+                SIGNED_OUT -> R.id.nav_action_signed_out
+                SIGNED_IN, USER_CHANGED -> R.id.nav_action_signed_in
+            }
+            navController.navigate(dest)
+        })
     }
 
     override fun onDestroy() {
         super.onDestroy()
         FirebaseAuthProvider.unsetAuthUiHelper(this)
     }
+
+    // -- Navigation
+
+    override fun onSupportNavigateUp() = findNavController(R.id.nav_host).navigateUp()
 
     // -- FirebaseAuthUiHelper
 
