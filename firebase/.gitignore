@@ -1,0 +1,8 @@
+.firebaserc
+functions/node_modules
+functions/firebase-debug.log
+functions/yarn-error.log
+# Private keys
+functions/auth0-config.json
+functions/api-key.json
+functions/service-key.json
