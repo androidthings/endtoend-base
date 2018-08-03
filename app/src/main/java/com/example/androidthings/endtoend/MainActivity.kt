@@ -16,40 +16,71 @@
 
 package com.example.androidthings.endtoend
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.things.pio.Gpio
-
-/**
- * Skeleton of an Android Things activity.
- *
- * Android Things peripheral APIs are accessible through the class
- * PeripheralManagerService. For example, the snippet below will open a GPIO pin and
- * set it to HIGH:
- *
- * <pre>{@code
- * val service = PeripheralManagerService()
- * val mLedGpio = service.openGpio("BCM6")
- * mLedGpio.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW)
- * mLedGpio.value = true
- * }</pre>
- * <p>
- * For more complex peripherals, look for an existing user-space driver, or implement one if none
- * is available.
- *
- * @see <a href="https://github.com/androidthings/contrib-drivers#readme">https://github.com/androidthings/contrib-drivers#readme</a>
- *
- */
-
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.example.androidthings.endtoend.auth.FirebaseDeviceAuthenticator
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var buttonGpio : Gpio
+    private val TAG: String = "MainActivity"
+
+    lateinit var gpioManager: GpioManager
+
+    lateinit var fcmReceiver: BroadcastReceiver
+
+    lateinit var firebaseAuth: FirebaseDeviceAuthenticator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val gpioStuff = GpioStuff(lifecycle)
-        gpioStuff.initGpio()
+        gpioManager = GpioManager(lifecycle)
+        gpioManager.initGpio()
+
+        firebaseAuth = FirebaseDeviceAuthenticator()
+
+        firebaseAuth.initAuth(this)
+    }
+
+    fun initFcmReceiver() {
+        fcmReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent != null) {
+                    val cmd = intent.getStringExtra(FcmContract.COMMAND_KEY)
+                    val index = intent.getIntExtra(FcmContract.INDEX_KEY, 0)
+
+                    Log.d(TAG, "FcmReceiver saw FCM Message : $cmd $index")
+
+                    if (cmd == FcmContract.CMD_TOGGLE) {
+                        gpioManager.toggleLed(index)
+                    }
+                }
+            }
+        }
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+            fcmReceiver,
+            IntentFilter(FcmContract.FCM_INTENT_ACTION)
+        )
+    }
+
+    override fun onResume() {
+        super.onResume()
+        initFcmReceiver()
+    }
+
+    override fun onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(fcmReceiver)
+        super.onPause()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        firebaseAuth.initAuth(this)
     }
 }

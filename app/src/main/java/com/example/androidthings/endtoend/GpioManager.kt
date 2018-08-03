@@ -16,8 +16,6 @@
 
 package com.example.androidthings.endtoend
 
-import android.content.ContentValues
-import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
@@ -25,60 +23,60 @@ import androidx.lifecycle.OnLifecycleEvent
 import com.google.android.things.pio.Gpio
 import com.google.android.things.pio.PeripheralManager
 
+class GpioManager(val lifecycle: Lifecycle) {
 
-class GpioStuff(val lifecycle : Lifecycle? = null) {
-
-    val TAG: String = "GpioStuff"
+    val TAG: String = "GpioManager"
 
     // The pin names for each dev board are available in the hardware section of the Android Things
 // site at https://developer.android.com/things/hardware
 // e.g the IMX7d pinout is at https://developer.android.com/things/hardware/imx7d-pico-io
-    val BUTTON_1_PIN = "GPIO6_IO14"
-    val BUTTON_2_PIN = "GPIO6_IO15"
-    val BUTTON_3_PIN = "GPIO2_IO07"
+    val BUTTON_PINS = arrayOf(
+        "GPIO6_IO14",
+        "GPIO6_IO15",
+        "GPIO2_IO07"
+    )
 
-    val LED_1_PIN = "GPIO2_IO02"
-    val LED_2_PIN = "GPIO2_IO00"
-    val LED_3_PIN = "GPIO2_IO05"
+    val LED_PINS = arrayOf(
+        "GPIO2_IO02",
+        "GPIO2_IO00",
+        "GPIO2_IO05"
+    )
+
+    lateinit var leds: Array<Gpio>
 
     fun initGpio() {
-        val button1: Gpio = initButton(BUTTON_1_PIN)
-        val button2: Gpio = initButton(BUTTON_2_PIN)
-        val button3: Gpio = initButton(BUTTON_3_PIN)
 
-        val led1: Gpio = initLed(LED_1_PIN)
-        val led2: Gpio = initLed(LED_2_PIN)
-        val led3: Gpio = initLed(LED_3_PIN)
-
-        if (lifecycle != null) {
-            button1.addToLifecycle(lifecycle, ::initButton)
-            button2.addToLifecycle(lifecycle, ::initButton)
-            button3.addToLifecycle(lifecycle, ::initButton)
-
-            led1.addToLifecycle(lifecycle, ::initLed)
-            led2.addToLifecycle(lifecycle, ::initLed)
-            led3.addToLifecycle(lifecycle, ::initLed)
+        val buttons: Array<Gpio> = Array(BUTTON_PINS.size) { i ->
+            initButton(BUTTON_PINS[i])
         }
 
-        led1.value = true
-
-        button1.registerGpioCallback {
-            Log.i(ContentValues.TAG, "Button A Pressed.")
-            led1.value = !led1.value
-            return@registerGpioCallback true
+        leds = Array(LED_PINS.size) { i ->
+            initLed(LED_PINS[i])
         }
 
-        button2.registerGpioCallback {
-            Log.i(ContentValues.TAG, "Button B Pressed.")
-            led2.value = !led2.value
-            return@registerGpioCallback true
+        for (button in buttons) {
+            button.addToLifecycle(lifecycle, ::initButton)
         }
 
-        button3.registerGpioCallback {
-            Log.i(ContentValues.TAG, "Button C Pressed.")
-            led3.value = !led3.value
-            return@registerGpioCallback true
+        for ((index, led: Gpio) in leds.withIndex()) {
+            leds[index] = leds[index].addToLifecycle(lifecycle, ::initLed)
         }
+
+        // Debug, just a visual indicator that everything booted up as expected.
+        leds[0].value = true
+
+        // Attach LED toggle as a visual indicator to each corresponding button.
+        for ((index, button: Gpio) in buttons.withIndex()) {
+            button.registerGpioCallback {
+                Log.i(TAG, "Button $index Pressed.")
+                toggleLed(index)
+                return@registerGpioCallback true
+            }
+        }
+    }
+
+    fun toggleLed(ledNum: Int) {
+        leds[ledNum].value = !leds[ledNum].value
     }
 
     fun initLed(pinName: String): Gpio {
@@ -101,13 +99,16 @@ class GpioStuff(val lifecycle : Lifecycle? = null) {
         return buttonGpio
     }
 
-    // Helper object which uses Delegates to "add" LifecycleObserver interface to GPIO.
-// With multiple GPIO peripherals (sensors, lights, buttons, etc), an Activity's onStart/onStop methods
-// can get large and repetitive very quickly.  By using Android Lifecycles most of this can be
-// avoided, by making each individual component listen for lifecycle changes and respond accordingly.
-// The below lines will release a GPIO pin when a LifeCycleOwner (usually an Activity) fires its onStop
-// method, and re-initialize the GPIO when onStart is fired.
-// Info on Lifecycle framework is available at: https://developer.android.com/topic/libraries/architecture/lifecycle
+    /* Helper object which uses Delegates to "add" LifecycleObserver interface to GPIO. With
+     * multiple GPIO peripherals (sensors, lights, buttons, etc), an Activity's onStart/onStop
+     * methods can get large and repetitive very quickly.  By using Android Lifecycles most of this
+     * can be avoided, by making each individual component listen for lifecycle changes and respond
+     * accordingly. The below lines will release a GPIO pin when a LifeCycleOwner
+     * (usually an Activity) fires its onStop method, and re-initialize the GPIO when onStart is
+     * fired.
+     * Info on Lifecycle framework is available at:
+     * https://developer.android.com/topic/libraries/architecture/lifecycle
+    */
     class LifecycleAwareGpio(
         var gpio: Gpio,
         val gpioInit: (String) -> Gpio,
@@ -115,6 +116,8 @@ class GpioStuff(val lifecycle : Lifecycle? = null) {
     ) : Gpio by gpio, LifecycleObserver {
 
         var closed: Boolean = false
+
+        private val TAG = "LifecycleGpio"
 
         @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
         fun onStop() {
