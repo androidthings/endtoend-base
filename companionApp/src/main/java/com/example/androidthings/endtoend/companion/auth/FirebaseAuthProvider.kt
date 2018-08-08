@@ -21,7 +21,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserInfo
 
 /** AuthProvider implementation based on FirebaseAuth. */
-object FirebaseAuthProvider: AuthProvider {
+object FirebaseAuthProvider : AuthProvider {
 
     private val firebaseAuth = FirebaseAuth.getInstance()
     private var authUiHelper: FirebaseAuthUiHelper? = null

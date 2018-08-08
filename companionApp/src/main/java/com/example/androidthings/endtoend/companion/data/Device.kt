@@ -22,7 +22,21 @@ import com.google.firebase.firestore.IgnoreExtraProperties
 /** A device the user can interact with from the companion app. */
 @IgnoreExtraProperties
 data class Device(
+    // This needs to be nullable because Device instances can (and are) built from documents
+    // received from Firestore, and in that case the id is the document ID itself (so it won't be
+    // *in* the document). Therefore we need to be able to construct it and then set the ID.
+    // Additionally, when adding a Device, leaving this as null lets Firestore generate an ID.
     @Exclude var id: String? = null,
     var name: String = "",
     var type: String = ""
-)
+) {
+    // Only ID considered for equality
+    override fun equals(other: Any?) = other is Device && id == other.id
+
+    // Only ID considered for equality
+    override fun hashCode() = id?.hashCode() ?: 0
+
+    fun areContentsTheSame(other: Device): Boolean {
+        return id == other.id && name == other.name && type == other.type
+    }
+}

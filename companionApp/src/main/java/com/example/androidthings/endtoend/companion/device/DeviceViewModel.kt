@@ -27,7 +27,7 @@ import com.example.androidthings.endtoend.companion.data.DeviceDao
 class DeviceViewModel(
     private val deviceDao: DeviceDao,
     private val authProvider: AuthProvider
-): ViewModel(), AuthProvider by authProvider {
+) : ViewModel(), AuthProvider by authProvider {
 
     val deviceLiveData: LiveData<List<Device>>
 

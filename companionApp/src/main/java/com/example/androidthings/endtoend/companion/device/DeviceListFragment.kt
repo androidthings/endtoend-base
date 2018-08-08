@@ -17,7 +17,6 @@
 package com.example.androidthings.endtoend.companion.device
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -30,12 +29,15 @@ import androidx.lifecycle.ViewModelProviders
 import com.example.androidthings.endtoend.companion.R
 import com.example.androidthings.endtoend.companion.ViewModelFactory
 import com.example.androidthings.endtoend.companion.data.Device
-import kotlinx.android.synthetic.main.fragment_device_list.temp_text
+import kotlinx.android.synthetic.main.fragment_device_list.empty
+import kotlinx.android.synthetic.main.fragment_device_list.list
+import kotlinx.android.synthetic.main.fragment_device_list.progress
 
 /** Fragment that shows the user's devices. */
-class DeviceListFragment: Fragment() {
+class DeviceListFragment : Fragment() {
 
     private lateinit var deviceViewModel: DeviceViewModel
+    private lateinit var adapter: DeviceListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,6 +52,12 @@ class DeviceListFragment: Fragment() {
         return inflater.inflate(R.layout.fragment_device_list, container, false)
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        adapter = DeviceListAdapter()
+        list.adapter = adapter
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
@@ -57,7 +65,7 @@ class DeviceListFragment: Fragment() {
         // fragment are created (e.g. by config changes)
         deviceViewModel = ViewModelProviders.of(requireActivity(), ViewModelFactory.instance)
             .get(DeviceViewModel::class.java)
-        deviceViewModel.deviceLiveData.observe(this, Observer { list -> bindDeviceList(list) })
+        deviceViewModel.deviceLiveData.observe(this, Observer { bindDeviceList(it) })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -73,9 +81,10 @@ class DeviceListFragment: Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun bindDeviceList(list: List<Device>) {
-        // TODO display with recyclerview instead
-        Log.d("DeviceListFragment", list.joinToString("\n", "{", "}"))
-        temp_text.text = "${list.size} devices"
+    private fun bindDeviceList(devices: List<Device>) {
+        adapter.submitList(devices)
+        progress.visibility = View.GONE
+        list.visibility = if (devices.isNotEmpty()) View.VISIBLE else View.GONE
+        empty.visibility = if (devices.isEmpty()) View.VISIBLE else View.GONE
     }
 }

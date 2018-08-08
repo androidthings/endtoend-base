@@ -27,7 +27,7 @@ interface DeviceDao {
     fun getObservableDevices(userInfo: UserInfo): LiveData<List<Device>>
 }
 
-class FirestoreDeviceDao: DeviceDao {
+class FirestoreDeviceDao : DeviceDao {
     private val firestore = FirebaseFirestore.getInstance()
 
     override fun getObservableDevices(userInfo: UserInfo): LiveData<List<Device>> {

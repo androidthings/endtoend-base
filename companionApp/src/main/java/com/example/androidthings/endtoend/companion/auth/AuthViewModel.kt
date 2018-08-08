@@ -25,7 +25,7 @@ import com.google.firebase.auth.UserInfo
 
 class AuthViewModel(
     private val authProvider: AuthProvider
-): ViewModel(), AuthProvider by authProvider {
+) : ViewModel(), AuthProvider by authProvider {
 
     // We don't want clients to be able to set what is stored in our MutableLiveData, so we expose
     // it as a regular LiveData instead.

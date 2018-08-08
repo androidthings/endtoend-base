@@ -31,7 +31,7 @@ class FirestoreQueryLiveData<T>(
     private val query: Query,
     private val snapshotProcessor: (QuerySnapshot) -> T,
     private val executor: Executor
-): DebouncedDeactivateLiveData<T>() {
+) : DebouncedDeactivateLiveData<T>() {
     private lateinit var listener: ListenerRegistration
 
     override fun onActivate() {
