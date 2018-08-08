@@ -17,6 +17,7 @@
 package com.example.androidthings.endtoend.companion.device
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -28,14 +29,13 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.androidthings.endtoend.companion.R
 import com.example.androidthings.endtoend.companion.ViewModelFactory
-import com.example.androidthings.endtoend.companion.auth.AuthViewModel
-import com.example.androidthings.endtoend.companion.auth.AuthViewModel.AuthUiModel
+import com.example.androidthings.endtoend.companion.data.Device
 import kotlinx.android.synthetic.main.fragment_device_list.temp_text
 
 /** Fragment that shows the user's devices. */
 class DeviceListFragment: Fragment() {
 
-    private lateinit var authViewModel: AuthViewModel
+    private lateinit var deviceViewModel: DeviceViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,15 +53,11 @@ class DeviceListFragment: Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        authViewModel = ViewModelProviders.of(requireActivity(), ViewModelFactory.instance)
-            .get(AuthViewModel::class.java)
-        authViewModel.authUiModelLiveData.observe(this, Observer { model -> bindAuthUi(model) })
-    }
-
-    private fun bindAuthUi(model: AuthUiModel) {
-        // TODO temporary
-        val displayName = model.user?.displayName ?: "Unknown"
-        temp_text.text = "${displayName}'s devices"
+        // Use the Activity here so that the view model is retained when new instances of this
+        // fragment are created (e.g. by config changes)
+        deviceViewModel = ViewModelProviders.of(requireActivity(), ViewModelFactory.instance)
+            .get(DeviceViewModel::class.java)
+        deviceViewModel.deviceLiveData.observe(this, Observer { list -> bindDeviceList(list) })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -71,9 +67,15 @@ class DeviceListFragment: Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.action_sign_out) {
-            authViewModel.signOut()
+            deviceViewModel.performSignOut()
             return true
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun bindDeviceList(list: List<Device>) {
+        // TODO display with recyclerview instead
+        Log.d("DeviceListFragment", list.joinToString("\n", "{", "}"))
+        temp_text.text = "${list.size} devices"
     }
 }

@@ -21,23 +21,28 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.androidthings.endtoend.companion.auth.AuthProvider
 import com.example.androidthings.endtoend.companion.auth.AuthViewModel
 import com.example.androidthings.endtoend.companion.auth.FirebaseAuthProvider
+import com.example.androidthings.endtoend.companion.data.DeviceDao
+import com.example.androidthings.endtoend.companion.data.FirestoreDeviceDao
+import com.example.androidthings.endtoend.companion.device.DeviceViewModel
 
 /**
  * Factory that constructs ViewModel classes throughout the app.
  * TODO Use Dagger2 with @Binds @IntoMap instead
  */
 class ViewModelFactory private constructor(
-    private val authProvider: AuthProvider
+    private val authProvider: AuthProvider,
+    private val deviceDao: DeviceDao
 ) : ViewModelProvider.Factory {
 
     companion object {
-        val instance = ViewModelFactory(FirebaseAuthProvider)
+        val instance = ViewModelFactory(FirebaseAuthProvider, FirestoreDeviceDao())
     }
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
         return when (modelClass) {
             AuthViewModel::class.java -> AuthViewModel(authProvider) as T
+            DeviceViewModel::class.java -> DeviceViewModel(deviceDao, authProvider) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class: $modelClass")
         }
     }

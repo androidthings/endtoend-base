@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package com.example.androidthings.endtoend.companion.auth
+package com.example.androidthings.endtoend.companion.data
 
-import androidx.lifecycle.LiveData
-import com.google.firebase.auth.UserInfo
+import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.IgnoreExtraProperties
 
-/** Provides authentication state and functionality to the app. */
-interface AuthProvider {
-
-    val userLiveData: LiveData<UserInfo?>
-
-    fun performSignIn()
-
-    fun performSignOut()
-}
+/** A device the user can interact with from the companion app. */
+@IgnoreExtraProperties
+data class Device(
+    @Exclude var id: String? = null,
+    var name: String = "",
+    var type: String = ""
+)

@@ -50,10 +50,10 @@ class AuthFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view.findViewById<View>(R.id.sign_in).setOnClickListener {
-            authViewModel.signIn()
+            authViewModel.performSignIn()
         }
         view.findViewById<View>(R.id.sign_out).setOnClickListener {
-            authViewModel.signOut()
+            authViewModel.performSignOut()
         }
     }
 

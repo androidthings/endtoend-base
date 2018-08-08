@@ -53,7 +53,8 @@ class MainActivity : AppCompatActivity(), FirebaseAuthUiHelper {
         authViewModel = ViewModelProviders.of(this, ViewModelFactory.instance)
             .get(AuthViewModel::class.java)
         val navController = findNavController(R.id.nav_host)
-        authViewModel.authStateModelLiveData.observe(this, Observer { state ->
+        authViewModel.authStateModelLiveData.observe(this, Observer { event ->
+            val state = event.getContentIfNotHandled() ?: return@Observer
             val dest = when (state.authStateChange) {
                 SIGNED_OUT -> R.id.nav_action_signed_out
                 SIGNED_IN, USER_CHANGED -> R.id.nav_action_signed_in

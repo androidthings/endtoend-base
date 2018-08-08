@@ -16,20 +16,27 @@
 
 package com.example.androidthings.endtoend.companion.auth
 
+import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserInfo
 
 /** AuthProvider implementation based on FirebaseAuth. */
-object FirebaseAuthProvider: AuthProvider() {
+object FirebaseAuthProvider: AuthProvider {
+
     private val firebaseAuth = FirebaseAuth.getInstance()
     private var authUiHelper: FirebaseAuthUiHelper? = null
+
+    override val userLiveData = MutableLiveData<UserInfo?>()
 
     init {
         firebaseAuth.addAuthStateListener { auth ->
             // Listener is invoked immediately after registration, when a user signs in, when the
             // current user signs out, and when the current user changes.
-            _userLiveData.postValue(auth.currentUser)
+            userLiveData.postValue(auth.currentUser)
         }
     }
+
+//    override fun getUserLiveData(): LiveData<UserInfo?> = userLiveData
 
     /**
      * Set the FirebaseAuthUiHelper. Intended to be used in [Activity#oncreate]

@@ -20,14 +20,17 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
+import com.example.androidthings.endtoend.companion.util.Event
 import com.google.firebase.auth.UserInfo
 
-class AuthViewModel(private val authProvider: AuthProvider): ViewModel() {
+class AuthViewModel(
+    private val authProvider: AuthProvider
+): ViewModel(), AuthProvider by authProvider {
 
     // We don't want clients to be able to set what is stored in our MutableLiveData, so we expose
     // it as a regular LiveData instead.
-    private val _authStateModelLiveData = MutableLiveData<AuthStateModel>()
-    val authStateModelLiveData: LiveData<AuthStateModel>
+    private val _authStateModelLiveData = MutableLiveData<Event<AuthStateModel>>()
+    val authStateModelLiveData: LiveData<Event<AuthStateModel>>
         get() = _authStateModelLiveData
 
     private val _authUiModelLiveData = MutableLiveData<AuthUiModel>()
@@ -46,12 +49,12 @@ class AuthViewModel(private val authProvider: AuthProvider): ViewModel() {
         // Show initializing state
         setAuthUiModel(authUiModel)
         // Watch for changes to signed in user
-        authProvider.userLiveData.observeForever(userObserver)
+        userLiveData.observeForever(userObserver)
     }
 
     override fun onCleared() {
         super.onCleared()
-        authProvider.userLiveData.removeObserver(userObserver)
+        userLiveData.removeObserver(userObserver)
     }
 
     private fun setAuthUiModel(model: AuthUiModel) {
@@ -71,19 +74,19 @@ class AuthViewModel(private val authProvider: AuthProvider): ViewModel() {
                 newUid == null -> AuthStateChange.SIGNED_OUT
                 else -> AuthStateChange.USER_CHANGED
             }
-            _authStateModelLiveData.value = AuthStateModel(stateChange, newInfo)
+            _authStateModelLiveData.value = Event(AuthStateModel(stateChange, newInfo))
         }
     }
 
     /** Initiates sign in action with the AuthProvider. */
-    fun signIn() {
+    override fun performSignIn() {
         // TODO maybe skip if we're initializing or already have a user
         setAuthUiModel(authUiModel.copy(authInProgress = true))
         authProvider.performSignIn()
     }
 
     /** Initiates sign out action with the AuthProvider. */
-    fun signOut() {
+    override fun performSignOut() {
         setAuthUiModel(authUiModel.copy(authInProgress = true))
         authProvider.performSignOut()
     }
