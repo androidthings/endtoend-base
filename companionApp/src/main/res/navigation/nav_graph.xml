@@ -28,16 +28,16 @@
         tools:layout="@layout/fragment_auth" />
 
     <fragment
-        android:id="@+id/device_list_fragment"
-        android:name="com.example.androidthings.endtoend.companion.device.DeviceListFragment"
-        android:label="DeviceListFragment"
-        tools:layout="@layout/fragment_device_list" />
+        android:id="@+id/gizmo_list_fragment"
+        android:name="com.example.androidthings.endtoend.companion.device.GizmoListFragment"
+        android:label="GizmoListFragment"
+        tools:layout="@layout/fragment_gizmo_list" />
 
-    <!-- On sign in, show the user's devices -->
+    <!-- On sign in, show the user's gizmos -->
     <action
         android:id="@+id/nav_action_signed_in"
         app:clearTask="true"
-        app:destination="@id/device_list_fragment" />
+        app:destination="@id/gizmo_list_fragment" />
 
     <!-- Signing out from anywhere goes back to auth_fragment -->
     <action

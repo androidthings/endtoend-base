@@ -36,7 +36,7 @@
         android:layout_gravity="center"
         android:gravity="center"
         android:padding="16dp"
-        android:text="You have no devices"
+        android:text="You have no gizmos"
         android:textAppearance="?android:textAppearanceLarge"
         android:visibility="gone" />
 
@@ -47,7 +47,7 @@
         android:orientation="vertical"
         android:visibility="gone"
         app:layoutManager="LinearLayoutManager"
-        tools:listitem="@layout/list_item_device"
+        tools:listitem="@layout/list_item_gizmo"
         tools:visibility="visible" />
 
 </FrameLayout>

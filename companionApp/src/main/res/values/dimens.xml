@@ -16,5 +16,5 @@
   -->
 
 <resources>
-    <dimen name="margin_16">16dp</dimen>
+    <dimen name="space_16">16dp</dimen>
 </resources>

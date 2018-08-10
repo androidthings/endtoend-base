@@ -28,16 +28,16 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.androidthings.endtoend.companion.R
 import com.example.androidthings.endtoend.companion.ViewModelFactory
-import com.example.androidthings.endtoend.companion.data.Device
-import kotlinx.android.synthetic.main.fragment_device_list.empty
-import kotlinx.android.synthetic.main.fragment_device_list.list
-import kotlinx.android.synthetic.main.fragment_device_list.progress
+import com.example.androidthings.endtoend.companion.data.Gizmo
+import kotlinx.android.synthetic.main.fragment_gizmo_list.empty
+import kotlinx.android.synthetic.main.fragment_gizmo_list.list
+import kotlinx.android.synthetic.main.fragment_gizmo_list.progress
 
-/** Fragment that shows the user's devices. */
-class DeviceListFragment : Fragment() {
+/** Fragment that shows the user's gizmos. */
+class GizmoListFragment : Fragment() {
 
-    private lateinit var deviceViewModel: DeviceViewModel
-    private lateinit var adapter: DeviceListAdapter
+    private lateinit var gizmoViewModel: GizmoViewModel
+    private lateinit var adapter: GizmoListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,12 +49,12 @@ class DeviceListFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_device_list, container, false)
+        return inflater.inflate(R.layout.fragment_gizmo_list, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        adapter = DeviceListAdapter()
+        adapter = GizmoListAdapter()
         list.adapter = adapter
     }
 
@@ -63,9 +63,9 @@ class DeviceListFragment : Fragment() {
 
         // Use the Activity here so that the view model is retained when new instances of this
         // fragment are created (e.g. by config changes)
-        deviceViewModel = ViewModelProviders.of(requireActivity(), ViewModelFactory.instance)
-            .get(DeviceViewModel::class.java)
-        deviceViewModel.deviceLiveData.observe(this, Observer { bindDeviceList(it) })
+        gizmoViewModel = ViewModelProviders.of(requireActivity(), ViewModelFactory.instance)
+            .get(GizmoViewModel::class.java)
+        gizmoViewModel.gizmoLiveData.observe(this, Observer { bindGizmoList(it) })
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -75,16 +75,16 @@ class DeviceListFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.action_sign_out) {
-            deviceViewModel.performSignOut()
+            gizmoViewModel.performSignOut()
             return true
         }
         return super.onOptionsItemSelected(item)
     }
 
-    private fun bindDeviceList(devices: List<Device>) {
-        adapter.submitList(devices)
+    private fun bindGizmoList(gizmos: List<Gizmo>) {
+        adapter.submitList(gizmos)
         progress.visibility = View.GONE
-        list.visibility = if (devices.isNotEmpty()) View.VISIBLE else View.GONE
-        empty.visibility = if (devices.isEmpty()) View.VISIBLE else View.GONE
+        list.visibility = if (gizmos.isNotEmpty()) View.VISIBLE else View.GONE
+        empty.visibility = if (gizmos.isEmpty()) View.VISIBLE else View.GONE
     }
 }

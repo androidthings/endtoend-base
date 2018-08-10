@@ -25,45 +25,45 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.androidthings.endtoend.companion.R
-import com.example.androidthings.endtoend.companion.data.Device
+import com.example.androidthings.endtoend.companion.data.Gizmo
 
-class DeviceListAdapter : ListAdapter<Device, DeviceViewHolder>(DeviceDiff) {
+class GizmoListAdapter : ListAdapter<Gizmo, GizmoViewHolder>(GizmoDiff) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DeviceViewHolder {
-        return DeviceViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.list_item_device, parent, false)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GizmoViewHolder {
+        return GizmoViewHolder(
+            LayoutInflater.from(parent.context).inflate(R.layout.list_item_gizmo, parent, false)
         )
     }
 
-    override fun onBindViewHolder(holder: DeviceViewHolder, position: Int) {
-        holder.bindDevice(getItem(position))
+    override fun onBindViewHolder(holder: GizmoViewHolder, position: Int) {
+        holder.bindGizmo(getItem(position))
     }
 }
 
-class DeviceViewHolder(
+class GizmoViewHolder(
     itemView: View,
-    private val nameView: TextView = itemView.findViewById(R.id.device_name),
-    private val typeView: TextView = itemView.findViewById(R.id.device_secondary)
+    private val nameView: TextView = itemView.findViewById(R.id.gizmo_name),
+    private val typeView: TextView = itemView.findViewById(R.id.gizmo_secondary)
 ) : ViewHolder(itemView) {
 
-    private lateinit var device: Device
+    private lateinit var gizmo: Gizmo
 
     init {
         itemView.setOnClickListener {
-            Log.d("DeviceViewHolder", "Clicked ${device.name}") // TODO navigate to device detail
+            Log.d("GizmoViewHolder", "Clicked ${gizmo.name}") // TODO navigate to gizmo detail
         }
     }
 
-    fun bindDevice(item: Device) {
-        device = item
-        nameView.text = device.name
-        typeView.text = device.type
+    fun bindGizmo(item: Gizmo) {
+        gizmo = item
+        nameView.text = gizmo.name
+        typeView.text = gizmo.type
     }
 }
 
-object DeviceDiff : DiffUtil.ItemCallback<Device>() {
-    override fun areItemsTheSame(oldItem: Device, newItem: Device) = (oldItem == newItem)
+private object GizmoDiff : DiffUtil.ItemCallback<Gizmo>() {
+    override fun areItemsTheSame(oldItem: Gizmo, newItem: Gizmo) = (oldItem == newItem)
 
-    override fun areContentsTheSame(oldItem: Device, newItem: Device) =
+    override fun areContentsTheSame(oldItem: Gizmo, newItem: Gizmo) =
         oldItem.areContentsTheSame(newItem)
 }

@@ -22,25 +22,25 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
 import java.util.concurrent.Executors
 
-/** Data source for information about a user's devices. */
-interface DeviceDao {
-    fun getObservableDevices(userInfo: UserInfo): LiveData<List<Device>>
+/** Data source for information about a user's gizmos. */
+interface GizmoDao {
+    fun getObservableGizmos(userInfo: UserInfo): LiveData<List<Gizmo>>
 }
 
-class FirestoreDeviceDao : DeviceDao {
+class FirestoreGizmoDao : GizmoDao {
     private val firestore = FirebaseFirestore.getInstance()
 
-    override fun getObservableDevices(userInfo: UserInfo): LiveData<List<Device>> {
+    override fun getObservableGizmos(userInfo: UserInfo): LiveData<List<Gizmo>> {
         // TODO maybe create one per uid in case multiple consumers want to observe
         val query = firestore.collection(PATH_USERS)
             .document("google-oauth2|112379635499756325744") // todo use uid from userInfo
-            .collection(PATH_DEVICES)
+            .collection(PATH_GIZMOS)
         return FirestoreQueryLiveData(query, ::processSnapshot, asyncExecutor)
     }
 
-    private fun processSnapshot(snapshot: QuerySnapshot): List<Device> {
+    private fun processSnapshot(snapshot: QuerySnapshot): List<Gizmo> {
         return snapshot.documents.mapNotNull { doc ->
-            doc.toObject(Device::class.java)?.apply {
+            doc.toObject(Gizmo::class.java)?.apply {
                 id = doc.id
             }
         }
@@ -51,4 +51,4 @@ private val asyncExecutor = Executors.newFixedThreadPool(4)
 
 // Firestore path elements
 private const val PATH_USERS = "users"
-private const val PATH_DEVICES = "devices"
+private const val PATH_GIZMOS = "gizmos"

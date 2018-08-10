@@ -21,9 +21,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.androidthings.endtoend.companion.auth.AuthProvider
 import com.example.androidthings.endtoend.companion.auth.AuthViewModel
 import com.example.androidthings.endtoend.companion.auth.FirebaseAuthProvider
-import com.example.androidthings.endtoend.companion.data.DeviceDao
-import com.example.androidthings.endtoend.companion.data.FirestoreDeviceDao
-import com.example.androidthings.endtoend.companion.device.DeviceViewModel
+import com.example.androidthings.endtoend.companion.data.GizmoDao
+import com.example.androidthings.endtoend.companion.data.FirestoreGizmoDao
+import com.example.androidthings.endtoend.companion.device.GizmoViewModel
 
 /**
  * Factory that constructs ViewModel classes throughout the app.
@@ -31,18 +31,18 @@ import com.example.androidthings.endtoend.companion.device.DeviceViewModel
  */
 class ViewModelFactory private constructor(
     private val authProvider: AuthProvider,
-    private val deviceDao: DeviceDao
+    private val gizmoDao: GizmoDao
 ) : ViewModelProvider.Factory {
 
     companion object {
-        val instance = ViewModelFactory(FirebaseAuthProvider, FirestoreDeviceDao())
+        val instance = ViewModelFactory(FirebaseAuthProvider, FirestoreGizmoDao())
     }
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
         return when (modelClass) {
             AuthViewModel::class.java -> AuthViewModel(authProvider) as T
-            DeviceViewModel::class.java -> DeviceViewModel(deviceDao, authProvider) as T
+            GizmoViewModel::class.java -> GizmoViewModel(gizmoDao, authProvider) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class: $modelClass")
         }
     }
