@@ -51,6 +51,11 @@ app.onSync(async (body, headers) => {
     return {};
   }
 
+  // Enable smart home for this user
+  await db.collection('users').doc(userid).update({
+    smartHome: true
+  })
+
   const userdevices = db.collection('users').doc(userid).collection('devices');
   const snapshot = await userdevices.get()
   const devices = []
@@ -151,20 +156,44 @@ app.onExecute(async (body, headers) => {
   };
 });
 
+app.onDisconnect(async (body, headers) => {
+  const userid = await getUser(headers)
+  // User is disconnecting from smart home
+  // Disable the flag
+  await db.collection('users').doc(userid).update({
+    smartHome: false
+  })
+})
+
 exports.smarthome = functions.https.onRequest(app);
+
+const isSmartHomeEnabled = async (userId) => {
+  // Check that smart home is enabled
+  const {smartHome}  = await db.collection('users').doc(userId).get().data();
+  if (!smartHome) {
+    console.warning(`User ${userId} is not connected to smart home`)
+  }
+  return userDoc.smartHome
+}
 
 exports.onDeviceCreate = functions.firestore
     .document('users/{userId}/devices/{deviceId}')
-    .onCreate((snap, context) => {
+    .onCreate(async (snap, context) => {
+      const performAction = await isSmartHomeEnabled(context.params.userId)
+      if (!performAction) return {}
+
       // User has added a new device
       // Resync the device list
-      console.info(`New device ${context.params.deviceId} created for ${context.params.userId}`)
-      return app.requestSync(context.params.userId)
+      console.info(`New device ${context.params.deviceId} created for ${userId}`)
+      return app.requestSync(userId)
     });
 
 exports.onDeviceDelete = functions.firestore
     .document('users/{userId}/devices/{deviceId}')
-    .onDelete((snap, context) => {
+    .onDelete(async (snap, context) => {
+      const performAction = await isSmartHomeEnabled(context.params.userId)
+      if (!performAction) return {}
+
       // User has removed a device
       // Resync the device list
       console.info(`New device ${context.params.deviceId} deleted for ${context.params.userId}`)
@@ -174,6 +203,9 @@ exports.onDeviceDelete = functions.firestore
 exports.onDeviceStateUpdate = functions.firestore
     .document('users/{userId}/devices/{deviceId}')
     .onUpdate(async (change, context) => {
+      const performAction = await isSmartHomeEnabled(context.params.userId)
+      if (!performAction) return {}
+
       // Report the state for this device
       const userId = context.params.userId
       const deviceId = context.params.deviceId
