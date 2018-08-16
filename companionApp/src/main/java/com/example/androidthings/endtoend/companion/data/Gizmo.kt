@@ -31,12 +31,12 @@ data class Gizmo(
     var type: String = ""
 ) {
     // Only ID considered for equality
-    override fun equals(other: Any?) = other is Gizmo && id == other.id
+    override fun equals(other: Any?) = (this === other) || (other is Gizmo && id == other.id)
 
     // Only ID considered for equality
     override fun hashCode() = id?.hashCode() ?: 0
 
-    fun areContentsTheSame(other: Gizmo): Boolean {
-        return id == other.id && name == other.name && type == other.type
+    fun areUiContentsTheSame(other: Gizmo): Boolean {
+        return name == other.name && type == other.type
     }
 }

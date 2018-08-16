@@ -18,37 +18,41 @@ package com.example.androidthings.endtoend.companion.data
 
 import androidx.lifecycle.LiveData
 import com.google.firebase.auth.UserInfo
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.QuerySnapshot
-import java.util.concurrent.Executors
 
-/** Data source for information about a user's gizmos. */
+/** Data source for information about a user's [Gizmo]s. */
 interface GizmoDao {
     fun getObservableGizmos(userInfo: UserInfo): LiveData<List<Gizmo>>
+    fun getObservableGizmo(userInfo: UserInfo, gizmoId: String): LiveData<Gizmo?>
 }
 
 class FirestoreGizmoDao : GizmoDao {
     private val firestore = FirebaseFirestore.getInstance()
 
     override fun getObservableGizmos(userInfo: UserInfo): LiveData<List<Gizmo>> {
-        // TODO maybe create one per uid in case multiple consumers want to observe
         val query = firestore.collection(PATH_USERS)
             .document("google-oauth2|112379635499756325744") // todo use uid from userInfo
             .collection(PATH_GIZMOS)
-        return FirestoreQueryLiveData(query, ::processSnapshot, asyncExecutor)
+        return FirestoreLiveData.forQuery(query, ::querySnapshotToGizmos, asyncExecutor)
     }
 
-    private fun processSnapshot(snapshot: QuerySnapshot): List<Gizmo> {
-        return snapshot.documents.mapNotNull { doc ->
-            doc.toObject(Gizmo::class.java)?.apply {
-                id = doc.id
-            }
-        }
+    override fun getObservableGizmo(userInfo: UserInfo, gizmoId: String): LiveData<Gizmo?> {
+        val query = firestore.collection(PATH_USERS)
+            .document("google-oauth2|112379635499756325744") // todo use uid from userInfo
+            .collection(PATH_GIZMOS)
+            .document(gizmoId)
+        return FirestoreLiveData.forDocument(query, ::documentSnapshotToGizmo, asyncExecutor)
+    }
+
+    private fun querySnapshotToGizmos(snapshot: QuerySnapshot): List<Gizmo> {
+        return snapshot.documents.mapNotNull { documentSnapshotToGizmo(it) }
+    }
+
+    private fun documentSnapshotToGizmo(doc: DocumentSnapshot): Gizmo? {
+        return if (doc.exists()) {
+            doc.toObject(Gizmo::class.java)?.apply { id = doc.id }
+        } else null
     }
 }
-
-private val asyncExecutor = Executors.newFixedThreadPool(4)
-
-// Firestore path elements
-private const val PATH_USERS = "users"
-private const val PATH_GIZMOS = "gizmos"

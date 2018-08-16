@@ -65,5 +65,5 @@ private object GizmoDiff : DiffUtil.ItemCallback<Gizmo>() {
     override fun areItemsTheSame(oldItem: Gizmo, newItem: Gizmo) = (oldItem == newItem)
 
     override fun areContentsTheSame(oldItem: Gizmo, newItem: Gizmo) =
-        oldItem.areContentsTheSame(newItem)
+        oldItem.areUiContentsTheSame(newItem)
 }
