@@ -26,6 +26,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.findNavController
 import com.example.androidthings.endtoend.companion.R
 import com.example.androidthings.endtoend.companion.ViewModelFactory
 import com.example.androidthings.endtoend.companion.data.Gizmo
@@ -36,7 +37,7 @@ import kotlinx.android.synthetic.main.fragment_gizmo_list.progress
 /** Fragment that shows the user's gizmos. */
 class GizmoListFragment : Fragment() {
 
-    private lateinit var gizmoViewModel: GizmoViewModel
+    private lateinit var gizmoListViewModel: GizmoListViewModel
     private lateinit var adapter: GizmoListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,20 +53,24 @@ class GizmoListFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_gizmo_list, container, false)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        adapter = GizmoListAdapter()
-        list.adapter = adapter
-    }
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
         // Use the Activity here so that the view model is retained when new instances of this
         // fragment are created (e.g. by config changes)
-        gizmoViewModel = ViewModelProviders.of(requireActivity(), ViewModelFactory.instance)
-            .get(GizmoViewModel::class.java)
-        gizmoViewModel.gizmoLiveData.observe(this, Observer { bindGizmoList(it) })
+        gizmoListViewModel = ViewModelProviders.of(requireActivity(), ViewModelFactory.instance)
+            .get(GizmoListViewModel::class.java)
+
+        gizmoListViewModel.gizmoListLiveData.observe(this, Observer { bindGizmoList(it) })
+        gizmoListViewModel.selectedGizmoLiveData.observe(this, Observer { event ->
+            val gizmoId = event.getContentIfNotHandled()?.id ?: return@Observer
+            val directions = GizmoListFragmentDirections.navActionSelectGizmo()
+                .setGizmoId(gizmoId)
+            view?.findNavController()?.navigate(directions)
+        })
+
+        adapter = GizmoListAdapter(gizmoListViewModel)
+        list.adapter = adapter
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -75,7 +80,7 @@ class GizmoListFragment : Fragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.action_sign_out) {
-            gizmoViewModel.performSignOut()
+            gizmoListViewModel.performSignOut()
             return true
         }
         return super.onOptionsItemSelected(item)

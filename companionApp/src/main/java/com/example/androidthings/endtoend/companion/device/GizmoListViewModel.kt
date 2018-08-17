@@ -18,35 +18,38 @@ package com.example.androidthings.endtoend.companion.device
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import com.example.androidthings.endtoend.companion.auth.AuthProvider
 import com.example.androidthings.endtoend.companion.data.Gizmo
 import com.example.androidthings.endtoend.companion.data.GizmoDao
+import com.example.androidthings.endtoend.companion.util.Event
+import com.example.androidthings.endtoend.companion.util.singleValueLiveData
+import com.example.androidthings.endtoend.companion.util.switchMap
 
-class GizmoViewModel(
+class GizmoListViewModel(
     private val gizmoDao: GizmoDao,
     private val authProvider: AuthProvider
 ) : ViewModel(), AuthProvider by authProvider {
 
-    val gizmoLiveData: LiveData<List<Gizmo>>
+    val gizmoListLiveData: LiveData<List<Gizmo>>
+
+    private val _selectedGizmoLiveData = MutableLiveData<Event<Gizmo>>()
+    val selectedGizmoLiveData: LiveData<Event<Gizmo>>
+        get() = _selectedGizmoLiveData
 
     init {
         // Creates a live data backed by another. The backing LiveData is replaced whenever the user
         // changes, without observers having to resubscribe to ours.
-        gizmoLiveData = Transformations.switchMap(userLiveData) { user ->
+        gizmoListLiveData = userLiveData.switchMap { user ->
             if (user != null) {
                 gizmoDao.getObservableGizmos(user)
             } else {
-                // Emit an empty list once.
-                MutableLiveData<List<Gizmo>>().apply {
-                    value = emptyList()
-                }
+                singleValueLiveData(emptyList()) // emit an empty list once
             }
         }
     }
 
     fun selectGizmo(gizmo: Gizmo) {
-        TODO("not implemented")
+        _selectedGizmoLiveData.postValue(Event(gizmo))
     }
 }

@@ -16,25 +16,17 @@
 
 package com.example.androidthings.endtoend.companion.data
 
-import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
 
-/** A hardware unit the user can interact with from the companion app. */
+/** An toggle-able feature (e.g. an LED) on a Gizmo. */
 @IgnoreExtraProperties
-data class Gizmo(
-    // Firestore requires a default constructor, so we need properties to be mutable and have
-    // defaults in order to let Firestore instantiate and populate them.
-    @Exclude var id: String = "",
-    var name: String = "",
-    var type: String = "",
-    var nicknames: List<String> = emptyList(),
-    var toggles: List<Toggle> = emptyList()
+data class Toggle(
+    var id: String = "",
+    var displayName: String = "",
+    var isOn: Boolean = false
 ) {
-    val displayName: String
-        get() = if (nicknames.isNotEmpty()) nicknames[0] else name
-
     // Only ID considered for equality
-    override fun equals(other: Any?) = (this === other) || (other is Gizmo && id == other.id)
+    override fun equals(other: Any?) = (this === other) || (other is Toggle && id == other.id)
 
     // Only ID considered for equality
     override fun hashCode() = id.hashCode()

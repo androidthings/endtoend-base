@@ -21,9 +21,10 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.androidthings.endtoend.companion.auth.AuthProvider
 import com.example.androidthings.endtoend.companion.auth.AuthViewModel
 import com.example.androidthings.endtoend.companion.auth.FirebaseAuthProvider
-import com.example.androidthings.endtoend.companion.data.GizmoDao
 import com.example.androidthings.endtoend.companion.data.FirestoreGizmoDao
-import com.example.androidthings.endtoend.companion.device.GizmoViewModel
+import com.example.androidthings.endtoend.companion.data.GizmoDao
+import com.example.androidthings.endtoend.companion.device.GizmoDetailViewModel
+import com.example.androidthings.endtoend.companion.device.GizmoListViewModel
 
 /**
  * Factory that constructs ViewModel classes throughout the app.
@@ -42,7 +43,8 @@ class ViewModelFactory private constructor(
         @Suppress("UNCHECKED_CAST")
         return when (modelClass) {
             AuthViewModel::class.java -> AuthViewModel(authProvider) as T
-            GizmoViewModel::class.java -> GizmoViewModel(gizmoDao, authProvider) as T
+            GizmoListViewModel::class.java -> GizmoListViewModel(gizmoDao, authProvider) as T
+            GizmoDetailViewModel::class.java -> GizmoDetailViewModel(gizmoDao, authProvider) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class: $modelClass")
         }
     }
