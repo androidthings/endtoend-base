@@ -30,6 +30,9 @@ import androidx.navigation.findNavController
 import com.example.androidthings.endtoend.companion.R
 import com.example.androidthings.endtoend.companion.ViewModelFactory
 import com.example.androidthings.endtoend.companion.data.Gizmo
+import com.example.androidthings.endtoend.shared.domain.Result
+import com.example.androidthings.endtoend.shared.domain.Result.Loading
+import com.example.androidthings.endtoend.shared.domain.successOr
 import kotlinx.android.synthetic.main.fragment_gizmo_list.empty
 import kotlinx.android.synthetic.main.fragment_gizmo_list.list
 import kotlinx.android.synthetic.main.fragment_gizmo_list.progress
@@ -86,10 +89,13 @@ class GizmoListFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    private fun bindGizmoList(gizmos: List<Gizmo>) {
+    private fun bindGizmoList(result: Result<List<Gizmo>>) {
+        val isLoading = result is Loading
+        val gizmos = result.successOr(emptyList())
         adapter.submitList(gizmos)
-        progress.visibility = View.GONE
+
+        progress.visibility = if (isLoading) View.VISIBLE else View.GONE
         list.visibility = if (gizmos.isNotEmpty()) View.VISIBLE else View.GONE
-        empty.visibility = if (gizmos.isEmpty()) View.VISIBLE else View.GONE
+        empty.visibility = if (!isLoading && gizmos.isEmpty()) View.VISIBLE else View.GONE
     }
 }

@@ -18,35 +18,38 @@ package com.example.androidthings.endtoend.companion.device
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import com.example.androidthings.endtoend.companion.auth.AuthProvider
 import com.example.androidthings.endtoend.companion.data.Gizmo
-import com.example.androidthings.endtoend.companion.data.GizmoDao
+import com.example.androidthings.endtoend.companion.domain.LoadUserGizmosUseCase
 import com.example.androidthings.endtoend.companion.util.Event
-import com.example.androidthings.endtoend.companion.util.singleValueLiveData
-import com.example.androidthings.endtoend.companion.util.switchMap
+import com.example.androidthings.endtoend.shared.domain.Result
+import com.google.firebase.auth.UserInfo
 
 class GizmoListViewModel(
-    private val gizmoDao: GizmoDao,
-    private val authProvider: AuthProvider
+    private val authProvider: AuthProvider,
+    private val loadUserGizmosUseCase: LoadUserGizmosUseCase
 ) : ViewModel(), AuthProvider by authProvider {
 
-    val gizmoListLiveData: LiveData<List<Gizmo>>
+    private val userObserver = Observer<UserInfo?> { user ->
+        loadUserGizmosUseCase.execute(user)
+    }
+
+    val gizmoListLiveData: LiveData<Result<List<Gizmo>>> = loadUserGizmosUseCase.observe()
 
     private val _selectedGizmoLiveData = MutableLiveData<Event<Gizmo>>()
     val selectedGizmoLiveData: LiveData<Event<Gizmo>>
         get() = _selectedGizmoLiveData
 
     init {
-        // Creates a live data backed by another. The backing LiveData is replaced whenever the user
-        // changes, without observers having to resubscribe to ours.
-        gizmoListLiveData = userLiveData.switchMap { user ->
-            if (user != null) {
-                gizmoDao.getObservableGizmos(user)
-            } else {
-                singleValueLiveData(emptyList()) // emit an empty list once
-            }
-        }
+        // trigger loading whenever the UserInfo changes
+        userLiveData.observeForever(userObserver)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        userLiveData.removeObserver(userObserver)
     }
 
     fun selectGizmo(gizmo: Gizmo) {

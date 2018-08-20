@@ -26,11 +26,15 @@ import androidx.lifecycle.ViewModelProviders
 import com.example.androidthings.endtoend.companion.R
 import com.example.androidthings.endtoend.companion.ViewModelFactory
 import com.example.androidthings.endtoend.companion.data.Gizmo
+import com.example.androidthings.endtoend.shared.domain.Result
+import com.example.androidthings.endtoend.shared.domain.Result.Loading
+import com.example.androidthings.endtoend.shared.domain.successOr
 import kotlinx.android.synthetic.main.fragment_gizmo_detail.gizmo_name
 import kotlinx.android.synthetic.main.fragment_gizmo_detail.gizmo_toggles
+import kotlinx.android.synthetic.main.fragment_gizmo_detail.progress
 
 /** Displays information about a Gizmo and provides ways to interact with the Gizmo's state. */
-class GizmoDetailFragment: Fragment() {
+class GizmoDetailFragment : Fragment() {
 
     private lateinit var gizmoDetailViewModel: GizmoDetailViewModel
 
@@ -51,17 +55,21 @@ class GizmoDetailFragment: Fragment() {
                 setGizmoId(GizmoDetailFragmentArgs.fromBundle(arguments).gizmoId)
             }
 
-        gizmoDetailViewModel.gizmoLiveData.observe(this, Observer { gizmo ->
-            if (gizmo != null) {
-                bindGizmo(gizmo)
-            }
-        })
+        gizmoDetailViewModel.gizmoLiveData.observe(this, Observer { result -> bindGizmo(result) })
     }
 
-    private fun bindGizmo(gizmo: Gizmo) {
-        gizmo_name.text = gizmo.displayName
-        gizmo_toggles.text = gizmo.toggles.joinToString(separator = "\n") {
-            toggle -> "${toggle.displayName} is ${if (toggle.isOn) "ON" else "OFF" }"
+    private fun bindGizmo(result: Result<Gizmo?>) {
+        val gizmo = result.successOr(null)
+        for (v in listOf(gizmo_name, gizmo_toggles)) {
+            v.visibility = if (gizmo == null) View.GONE else View.VISIBLE
         }
+        gizmo?.let {
+            gizmo_name.text = it.displayName
+            gizmo_toggles.text = it.toggles.joinToString(separator = "\n") { toggle ->
+                "${toggle.displayName} is ${if (toggle.isOn) "ON" else "OFF"}"
+            }
+        }
+
+        progress.visibility = if (result is Loading) View.VISIBLE else View.GONE
     }
 }
