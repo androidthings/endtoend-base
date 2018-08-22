@@ -39,13 +39,11 @@ class GizmoDetailViewModel(
         loadGizmoUseCase.execute(it)
     }
 
-    val gizmoLiveData: LiveData<Result<Gizmo?>>
+    val gizmoLiveData: LiveData<Result<Gizmo?>> = loadGizmoUseCase.observe()
 
     init {
         loadGizmoArgs.observeForever(loadGizmoArgsObserver)
         loadGizmoArgs.addSource(userLiveData) { user -> setUser(user) }
-
-        gizmoLiveData = loadGizmoUseCase.observe()
     }
 
     override fun onCleared() {

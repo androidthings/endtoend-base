@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package com.example.androidthings.endtoend.companion.data
+package com.example.androidthings.endtoend.companion.domain
 
-import java.util.concurrent.Executors
+import com.example.androidthings.endtoend.companion.data.EmailDao
+import com.example.androidthings.endtoend.shared.domain.UseCase
+import com.google.firebase.auth.UserInfo
 
-internal val asyncExecutor = Executors.newFixedThreadPool(4)
+class UploadUserIdUseCase(
+    private val emailDao: EmailDao
+): UseCase<UserInfo, Boolean>() {
 
-// Firestore path elements
-internal const val PATH_EMAILS = "emails"
-internal const val PATH_USERS = "users"
-internal const val PATH_GIZMOS = "gizmos"
-
-// Firestore field names
-internal const val FIELD_FIREBASE_ID = "firebaseId"
+    override fun execute(parameters: UserInfo) {
+        emailDao.writeUserEmailToUidMapping(parameters)
+    }
+}
