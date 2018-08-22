@@ -35,11 +35,14 @@ const auth0 = new AuthenticationClient(require('./auth0-config.json'));
 const getUser = async (headers) => {
   // Authorization: "Bearer 123ABC"
   const accessToken = headers.authorization.substr(7);
-  const userProfile = await auth0.getProfile(accessToken)
+  const {email} = await auth0.getProfile(accessToken)
   // {
   //   sub: 'google-oauth2|1234567890'
+  //   email: 'example@email.com'
   // }
-  return userProfile.sub
+  // Look up this email in our database
+  const emailDoc = await db.collection('emails').doc(email).get().data();
+  return emailDoc.firebaseId
 }
 
 app.onSync(async (body, headers) => {
