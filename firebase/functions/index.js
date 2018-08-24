@@ -35,11 +35,14 @@ const auth0 = new AuthenticationClient(require('./auth0-config.json'));
 const getUser = async (headers) => {
   // Authorization: "Bearer 123ABC"
   const accessToken = headers.authorization.substr(7);
-  const userProfile = await auth0.getProfile(accessToken)
+  const {email} = await auth0.getProfile(accessToken)
   // {
   //   sub: 'google-oauth2|1234567890'
+  //   email: 'example@email.com'
   // }
-  return userProfile.sub
+  // Look up this email in our database
+  const emailDoc = await db.collection('emails').doc(email).get().data();
+  return emailDoc.firebaseId
 }
 
 app.onSync(async (body, headers) => {
@@ -50,6 +53,11 @@ app.onSync(async (body, headers) => {
     console.error(`User ${userid} has not created an account, so there are no devices`)
     return {};
   }
+
+  // Enable smart home for this user
+  await db.collection('users').doc(userid).update({
+    smartHome: true
+  })
 
   const userdevices = db.collection('users').doc(userid).collection('devices');
   const snapshot = await userdevices.get()
@@ -151,20 +159,44 @@ app.onExecute(async (body, headers) => {
   };
 });
 
+app.onDisconnect(async (body, headers) => {
+  const userid = await getUser(headers)
+  // User is disconnecting from smart home
+  // Disable the flag
+  await db.collection('users').doc(userid).update({
+    smartHome: false
+  })
+})
+
 exports.smarthome = functions.https.onRequest(app);
+
+const isSmartHomeEnabled = async (userId) => {
+  // Check that smart home is enabled
+  const {smartHome}  = await db.collection('users').doc(userId).get().data();
+  if (!smartHome) {
+    console.warning(`User ${userId} is not connected to smart home`)
+  }
+  return userDoc.smartHome
+}
 
 exports.onDeviceCreate = functions.firestore
     .document('users/{userId}/devices/{deviceId}')
-    .onCreate((snap, context) => {
+    .onCreate(async (snap, context) => {
+      const performAction = await isSmartHomeEnabled(context.params.userId)
+      if (!performAction) return {}
+
       // User has added a new device
       // Resync the device list
-      console.info(`New device ${context.params.deviceId} created for ${context.params.userId}`)
-      return app.requestSync(context.params.userId)
+      console.info(`New device ${context.params.deviceId} created for ${userId}`)
+      return app.requestSync(userId)
     });
 
 exports.onDeviceDelete = functions.firestore
     .document('users/{userId}/devices/{deviceId}')
-    .onDelete((snap, context) => {
+    .onDelete(async (snap, context) => {
+      const performAction = await isSmartHomeEnabled(context.params.userId)
+      if (!performAction) return {}
+
       // User has removed a device
       // Resync the device list
       console.info(`New device ${context.params.deviceId} deleted for ${context.params.userId}`)
@@ -174,6 +206,9 @@ exports.onDeviceDelete = functions.firestore
 exports.onDeviceStateUpdate = functions.firestore
     .document('users/{userId}/devices/{deviceId}')
     .onUpdate(async (change, context) => {
+      const performAction = await isSmartHomeEnabled(context.params.userId)
+      if (!performAction) return {}
+
       // Report the state for this device
       const userId = context.params.userId
       const deviceId = context.params.deviceId
