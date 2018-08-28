@@ -19,11 +19,11 @@ package com.example.androidthings.endtoend.companion.data
 import com.example.androidthings.endtoend.companion.data.FirestoreLiveData.Companion.forDocument
 import com.example.androidthings.endtoend.companion.data.FirestoreLiveData.Companion.forQuery
 import com.example.androidthings.endtoend.companion.util.DebouncedDeactivateLiveData
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.EventListener
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.QuerySnapshot
 import java.util.concurrent.Executor
 
@@ -51,7 +51,7 @@ abstract class FirestoreLiveData<T, SNAPSHOT>(
          * @param executor Executor on which the snapshotProcessor will be invoked
          */
         fun <T> forQuery(
-            query: Query,
+            query: CollectionReference,
             snapshotProcessor: (QuerySnapshot) -> T,
             executor: Executor
         ): FirestoreLiveData<T, QuerySnapshot> =
@@ -101,7 +101,7 @@ abstract class FirestoreLiveData<T, SNAPSHOT>(
 
 /** LiveData that watches a Firestore Query. */
 private class FirestoreQueryLiveData<T>(
-    private val query: Query,
+    private val query: CollectionReference,
     snapshotProcessor: (QuerySnapshot) -> T,
     executor: Executor
 ) : FirestoreLiveData<T, QuerySnapshot>(snapshotProcessor, executor) {

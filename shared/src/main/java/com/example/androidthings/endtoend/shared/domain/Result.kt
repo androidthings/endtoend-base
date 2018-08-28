@@ -21,6 +21,11 @@ import com.example.androidthings.endtoend.shared.domain.Result.Success
 /** A wrapper class that holds a value. */
 sealed class Result<out R> {
 
+    companion object {
+        // Can be used instead of Result.Success(Unit) wherever Result<Unit> is used.
+        val success = Result.Success(Unit)
+    }
+
     data class Success<T>(val data: T) : Result<T>()
     data class Error(val exception: Exception) : Result<Nothing>()
     object Loading : Result<Nothing>()

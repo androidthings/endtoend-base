@@ -26,7 +26,7 @@ import com.google.firebase.auth.UserInfo
 /** UseCase that loads all Gizmos tied to the current user. This is a continuous UseCase. */
 class LoadUserGizmosUseCase(
     private val gizmoDao: GizmoDao
-) : UseCase<UserInfo?, List<Gizmo>>() {
+) : UseCase<UserInfo?, Result<List<Gizmo>>>() {
 
     private var currentUserInfo: UserInfo? = null
     private var sourceLiveData: LiveData<List<Gizmo>>? = null
@@ -35,6 +35,7 @@ class LoadUserGizmosUseCase(
         if (currentUserInfo == parameters) {
             return // We're already observing this user
         }
+        currentUserInfo = parameters
 
         // Different user; remove the old source
         sourceLiveData?.let {

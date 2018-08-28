@@ -48,9 +48,7 @@ object DefaultScheduler : Scheduler {
  */
 object AsyncScheduler : Scheduler {
 
-    private val executorService: ExecutorService = Executors.newFixedThreadPool(
-        NUMBER_OF_THREADS
-    )
+    private val executorService = Executors.newFixedThreadPool(NUMBER_OF_THREADS)
 
     override fun execute(task: () -> Unit) {
         executorService.execute(task)

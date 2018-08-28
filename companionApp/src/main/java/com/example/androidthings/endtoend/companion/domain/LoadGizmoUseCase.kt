@@ -26,7 +26,7 @@ import com.google.firebase.auth.UserInfo
 /** UseCase that loads a Gizmo. This is a continuous UseCase. */
 class LoadGizmoUseCase(
     private val gizmoDao: GizmoDao
-) : UseCase<LoadGizmoUseCaseParameters, Gizmo?>() {
+) : UseCase<LoadGizmoUseCaseParameters, Result<Gizmo?>>() {
 
     private var currentParams = LoadGizmoUseCaseParameters(null, null)
     private var sourceLiveData: LiveData<Gizmo?>? = null

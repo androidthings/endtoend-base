@@ -34,12 +34,12 @@ abstract class UseCase<in P, R> {
 
     /** Scheduler provided for convenience if this UseCase needs to move to another thread. */
     protected val scheduler: Scheduler = DefaultScheduler
-    protected val result = MediatorLiveData<Result<R>>()
+    protected val result = MediatorLiveData<R>()
 
-    fun observe(): LiveData<Result<R>> = result
+    fun observe(): LiveData<R> = result
 
     abstract fun execute(parameters: P)
 }
 
-/** Allows calls like useCase.execute() for UseCases with no paramters. */
+/** Allows calls like useCase.execute() for UseCases with no parameters. */
 fun <R> UseCase<Unit, R>.execute() = execute(Unit)
