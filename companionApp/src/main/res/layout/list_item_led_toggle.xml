@@ -20,45 +20,38 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <ProgressBar
-        android:id="@android:id/progress"
-        style="?android:progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    android:layout_height="wrap_content"
+    android:background="?selectableItemBackground"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
 
     <TextView
-        android:id="@+id/gizmo_name"
-        android:layout_width="0dp"
+        android:id="@+id/toggle_name"
+        style="?textAppearanceListItem"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="@dimen/space_16"
-        android:layout_marginRight="@dimen/space_16"
-        android:layout_marginTop="@dimen/space_16"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="Rainbow 1" />
+        tools:text="Red LED" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/gizmo_toggles"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:clipToPadding="false"
-        android:orientation="vertical"
-        android:paddingVertical="@dimen/space_16"
-        app:layout_constraintBottom_toBottomOf="parent"
+    <ImageView
+        android:id="@+id/toggle_icon"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/gizmo_name"
-        app:layoutManager="GridLayoutManager"
-        app:spanCount="2"
-        tools:listitem="@layout/list_item_led_toggle"
-        tools:targetApi="o" />
+        app:layout_constraintTop_toBottomOf="@id/toggle_name"
+        tools:src="@drawable/ic_lightbulb_outline" />
+
+    <TextView
+        android:id="@+id/toggle_status"
+        style="?textAppearanceListItemSecondary"
+        android:layout_width="wrap_content"
+        android:layout_height="20sp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toggle_icon"
+        tools:text="ON" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

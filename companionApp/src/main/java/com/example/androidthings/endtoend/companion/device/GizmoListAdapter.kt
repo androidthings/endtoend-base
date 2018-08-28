@@ -57,7 +57,7 @@ class GizmoViewHolder(
         }
     }
 
-    fun bindGizmo(item: Gizmo) {
+    internal fun bindGizmo(item: Gizmo) {
         gizmo = item
         nameView.text = gizmo.displayName
         typeView.text = gizmo.type

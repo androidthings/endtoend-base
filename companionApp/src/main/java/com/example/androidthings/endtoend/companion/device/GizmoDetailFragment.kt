@@ -37,6 +37,7 @@ import kotlinx.android.synthetic.main.fragment_gizmo_detail.progress
 class GizmoDetailFragment : Fragment() {
 
     private lateinit var gizmoDetailViewModel: GizmoDetailViewModel
+    private lateinit var adapter: ToggleListAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,6 +49,9 @@ class GizmoDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        adapter = ToggleListAdapter()
+        gizmo_toggles.adapter = adapter
 
         gizmoDetailViewModel = ViewModelProviders.of(this, ViewModelFactory.instance)
             .get(GizmoDetailViewModel::class.java)
@@ -65,9 +69,7 @@ class GizmoDetailFragment : Fragment() {
         }
         gizmo?.let {
             gizmo_name.text = it.displayName
-            gizmo_toggles.text = it.toggles.joinToString(separator = "\n") { toggle ->
-                "${toggle.displayName} is ${if (toggle.isOn) "ON" else "OFF"}"
-            }
+            adapter.submitList(it.toggles)
         }
 
         progress.visibility = if (result is Loading) View.VISIBLE else View.GONE

@@ -18,12 +18,12 @@ package com.example.androidthings.endtoend.companion.data
 
 import com.google.firebase.firestore.IgnoreExtraProperties
 
-/** An toggle-able feature (e.g. an LED) on a Gizmo. */
+/** A toggle-able feature (e.g. an LED) on a Gizmo. */
 @IgnoreExtraProperties
 data class Toggle(
     var id: String = "",
     var displayName: String = "",
-    var isOn: Boolean = false
+    var on: Boolean = false
 ) {
     // Only ID considered for equality
     override fun equals(other: Any?) = (this === other) || (other is Toggle && id == other.id)
