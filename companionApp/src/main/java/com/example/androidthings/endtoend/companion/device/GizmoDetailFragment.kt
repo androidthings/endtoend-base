@@ -50,14 +50,14 @@ class GizmoDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        adapter = ToggleListAdapter()
-        gizmo_toggles.adapter = adapter
-
         gizmoDetailViewModel = ViewModelProviders.of(this, ViewModelFactory.instance)
             .get(GizmoDetailViewModel::class.java)
             .apply {
                 setGizmoId(GizmoDetailFragmentArgs.fromBundle(arguments).gizmoId)
             }
+
+        adapter = ToggleListAdapter(gizmoDetailViewModel)
+        gizmo_toggles.adapter = adapter
 
         gizmoDetailViewModel.gizmoLiveData.observe(this, Observer { result -> bindGizmo(result) })
     }

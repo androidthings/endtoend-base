@@ -68,6 +68,7 @@ dependencies {
     implementation "com.google.firebase:firebase-core:$firebaseCoreVersion"
     implementation "com.google.firebase:firebase-auth:$firebaseAuthVersion"
     implementation "com.google.firebase:firebase-firestore:$firebaseFirestoreVersion"
+    implementation "com.google.firebase:firebase-functions:$firebaseFunctionsVersion"
     implementation "com.firebaseui:firebase-ui-auth:$firebaseUiVersion"
 
     testImplementation "junit:junit:$junitVersion"

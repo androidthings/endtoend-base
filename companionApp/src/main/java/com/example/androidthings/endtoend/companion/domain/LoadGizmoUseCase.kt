@@ -35,6 +35,7 @@ class LoadGizmoUseCase(
         if (parameters == currentParams) {
             return // We're already observing this Gizmo
         }
+        currentParams = parameters
 
         sourceLiveData?.let {
             result.removeSource(it)

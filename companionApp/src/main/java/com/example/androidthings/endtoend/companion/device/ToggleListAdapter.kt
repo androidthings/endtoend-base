@@ -27,13 +27,16 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.androidthings.endtoend.companion.R
 import com.example.androidthings.endtoend.companion.data.Toggle
 
-class ToggleListAdapter : ListAdapter<Toggle, ToggleViewHolder>(ToggleDiff) {
+class ToggleListAdapter(
+    private val viewModel: GizmoDetailViewModel
+) : ListAdapter<Toggle, ToggleViewHolder>(ToggleDiff) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ToggleViewHolder {
         return ToggleViewHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.list_item_led_toggle, parent, false
-            )
+            ),
+            viewModel
         )
     }
 
@@ -44,12 +47,19 @@ class ToggleListAdapter : ListAdapter<Toggle, ToggleViewHolder>(ToggleDiff) {
 
 class ToggleViewHolder(
     itemView: View,
+    private val viewModel: GizmoDetailViewModel,
     private val nameView: TextView = itemView.findViewById(R.id.toggle_name),
     private val iconView: ImageView = itemView.findViewById(R.id.toggle_icon),
     private val statusView: TextView = itemView.findViewById(R.id.toggle_status)
 ) : ViewHolder(itemView) {
 
     private lateinit var toggle: Toggle
+
+    init {
+        itemView.setOnClickListener {
+            viewModel.onToggleClicked(toggle)
+        }
+    }
 
     internal fun bind(item: Toggle) {
         toggle = item

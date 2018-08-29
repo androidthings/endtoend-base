@@ -27,6 +27,7 @@ import com.example.androidthings.endtoend.companion.device.GizmoDetailViewModel
 import com.example.androidthings.endtoend.companion.device.GizmoListViewModel
 import com.example.androidthings.endtoend.companion.domain.LoadGizmoUseCase
 import com.example.androidthings.endtoend.companion.domain.LoadUserGizmosUseCase
+import com.example.androidthings.endtoend.companion.domain.SendToggleCommandUseCase
 
 /**
  * Factory that constructs ViewModel classes throughout the app.
@@ -36,7 +37,8 @@ class ViewModelFactory private constructor(
     private val authProvider: AuthProvider,
     private val gizmoDao: GizmoDao,
     private val loadUserGizmosUseCase: LoadUserGizmosUseCase = LoadUserGizmosUseCase(gizmoDao),
-    private val loadGizmoUseCase: LoadGizmoUseCase = LoadGizmoUseCase(gizmoDao)
+    private val loadGizmoUseCase: LoadGizmoUseCase = LoadGizmoUseCase(gizmoDao),
+    private val sendToggleCommandUseCase: SendToggleCommandUseCase = SendToggleCommandUseCase()
 ) : ViewModelProvider.Factory {
 
     companion object {
@@ -50,7 +52,7 @@ class ViewModelFactory private constructor(
             GizmoListViewModel::class.java ->
                 GizmoListViewModel(authProvider, loadUserGizmosUseCase) as T
             GizmoDetailViewModel::class.java ->
-                GizmoDetailViewModel(authProvider, loadGizmoUseCase) as T
+                GizmoDetailViewModel(authProvider, loadGizmoUseCase, sendToggleCommandUseCase) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class: $modelClass")
         }
     }
