@@ -27,7 +27,7 @@ import androidx.lifecycle.MutableLiveData
  *
  * Subclasses implement [onActivate] and [onDeactivate] instead.
  */
-open class DebouncedDeactivateLiveData<T>: MutableLiveData<T>() {
+open class DebouncedDeactivateLiveData<T> : MutableLiveData<T>() {
 
     companion object {
         private val handler = Handler()

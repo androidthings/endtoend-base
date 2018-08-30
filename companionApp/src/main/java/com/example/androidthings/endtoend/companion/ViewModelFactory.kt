@@ -21,9 +21,12 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.androidthings.endtoend.companion.auth.AuthProvider
 import com.example.androidthings.endtoend.companion.auth.AuthViewModel
 import com.example.androidthings.endtoend.companion.auth.FirebaseAuthProvider
-import com.example.androidthings.endtoend.companion.data.GizmoDao
 import com.example.androidthings.endtoend.companion.data.FirestoreGizmoDao
-import com.example.androidthings.endtoend.companion.device.GizmoViewModel
+import com.example.androidthings.endtoend.companion.data.GizmoDao
+import com.example.androidthings.endtoend.companion.device.GizmoDetailViewModel
+import com.example.androidthings.endtoend.companion.device.GizmoListViewModel
+import com.example.androidthings.endtoend.companion.domain.LoadGizmoUseCase
+import com.example.androidthings.endtoend.companion.domain.LoadUserGizmosUseCase
 
 /**
  * Factory that constructs ViewModel classes throughout the app.
@@ -31,7 +34,9 @@ import com.example.androidthings.endtoend.companion.device.GizmoViewModel
  */
 class ViewModelFactory private constructor(
     private val authProvider: AuthProvider,
-    private val gizmoDao: GizmoDao
+    private val gizmoDao: GizmoDao,
+    private val loadUserGizmosUseCase: LoadUserGizmosUseCase = LoadUserGizmosUseCase(gizmoDao),
+    private val loadGizmoUseCase: LoadGizmoUseCase = LoadGizmoUseCase(gizmoDao)
 ) : ViewModelProvider.Factory {
 
     companion object {
@@ -42,7 +47,10 @@ class ViewModelFactory private constructor(
         @Suppress("UNCHECKED_CAST")
         return when (modelClass) {
             AuthViewModel::class.java -> AuthViewModel(authProvider) as T
-            GizmoViewModel::class.java -> GizmoViewModel(gizmoDao, authProvider) as T
+            GizmoListViewModel::class.java ->
+                GizmoListViewModel(authProvider, loadUserGizmosUseCase) as T
+            GizmoDetailViewModel::class.java ->
+                GizmoDetailViewModel(authProvider, loadGizmoUseCase) as T
             else -> throw IllegalArgumentException("Unknown ViewModel class: $modelClass")
         }
     }

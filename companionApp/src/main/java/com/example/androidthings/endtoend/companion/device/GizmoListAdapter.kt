@@ -16,7 +16,6 @@
 
 package com.example.androidthings.endtoend.companion.device
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -27,11 +26,14 @@ import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.androidthings.endtoend.companion.R
 import com.example.androidthings.endtoend.companion.data.Gizmo
 
-class GizmoListAdapter : ListAdapter<Gizmo, GizmoViewHolder>(GizmoDiff) {
+class GizmoListAdapter(
+    private val viewModel: GizmoListViewModel
+) : ListAdapter<Gizmo, GizmoViewHolder>(GizmoDiff) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GizmoViewHolder {
         return GizmoViewHolder(
-            LayoutInflater.from(parent.context).inflate(R.layout.list_item_gizmo, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.list_item_gizmo, parent, false),
+            viewModel
         )
     }
 
@@ -42,6 +44,7 @@ class GizmoListAdapter : ListAdapter<Gizmo, GizmoViewHolder>(GizmoDiff) {
 
 class GizmoViewHolder(
     itemView: View,
+    private val viewModel: GizmoListViewModel,
     private val nameView: TextView = itemView.findViewById(R.id.gizmo_name),
     private val typeView: TextView = itemView.findViewById(R.id.gizmo_secondary)
 ) : ViewHolder(itemView) {
@@ -50,13 +53,13 @@ class GizmoViewHolder(
 
     init {
         itemView.setOnClickListener {
-            Log.d("GizmoViewHolder", "Clicked ${gizmo.name}") // TODO navigate to gizmo detail
+            viewModel.selectGizmo(gizmo)
         }
     }
 
     fun bindGizmo(item: Gizmo) {
         gizmo = item
-        nameView.text = gizmo.name
+        nameView.text = gizmo.displayName
         typeView.text = gizmo.type
     }
 }
@@ -64,6 +67,7 @@ class GizmoViewHolder(
 private object GizmoDiff : DiffUtil.ItemCallback<Gizmo>() {
     override fun areItemsTheSame(oldItem: Gizmo, newItem: Gizmo) = (oldItem == newItem)
 
-    override fun areContentsTheSame(oldItem: Gizmo, newItem: Gizmo) =
-        oldItem.areUiContentsTheSame(newItem)
+    override fun areContentsTheSame(oldItem: Gizmo, newItem: Gizmo): Boolean {
+        return oldItem.displayName == newItem.displayName && oldItem.type == newItem.type
+    }
 }

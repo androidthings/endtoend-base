@@ -17,6 +17,8 @@
 package com.example.androidthings.endtoend.companion.auth
 
 import androidx.lifecycle.MutableLiveData
+import com.example.androidthings.endtoend.companion.data.FirebaseEmailDao
+import com.example.androidthings.endtoend.companion.domain.UploadUserIdUseCase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserInfo
 
@@ -24,6 +26,8 @@ import com.google.firebase.auth.UserInfo
 object FirebaseAuthProvider : AuthProvider {
 
     private val firebaseAuth = FirebaseAuth.getInstance()
+    private val uploadUserIdUseCase = UploadUserIdUseCase(FirebaseEmailDao())
+
     private var authUiHelper: FirebaseAuthUiHelper? = null
 
     override val userLiveData = MutableLiveData<UserInfo?>()
@@ -32,11 +36,15 @@ object FirebaseAuthProvider : AuthProvider {
         firebaseAuth.addAuthStateListener { auth ->
             // Listener is invoked immediately after registration, when a user signs in, when the
             // current user signs out, and when the current user changes.
-            userLiveData.postValue(auth.currentUser)
+            val currentUser = auth.currentUser
+            userLiveData.postValue(currentUser)
+
+            // Ensure the email<>uid mapping is in Firestore
+            if (currentUser != null) {
+                uploadUserIdUseCase.execute(currentUser)
+            }
         }
     }
-
-//    override fun getUserLiveData(): LiveData<UserInfo?> = userLiveData
 
     /**
      * Set the FirebaseAuthUiHelper. Intended to be used in [Activity#oncreate]

@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-package com.example.androidthings.endtoend.companion.data
+package com.example.androidthings.endtoend.companion.util
 
-import java.util.concurrent.Executors
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 
-internal val asyncExecutor = Executors.newFixedThreadPool(4)
+fun <X, Y> LiveData<X>.map(func: (X) -> Y): LiveData<Y> =
+    Transformations.map(this, func)
 
-// Firestore path elements
-internal const val PATH_EMAILS = "emails"
-internal const val PATH_USERS = "users"
-internal const val PATH_GIZMOS = "gizmos"
+fun <X, Y> LiveData<X>.switchMap(func: (X) -> LiveData<Y>): LiveData<Y> =
+    Transformations.switchMap(this, func)
 
-// Firestore field names
-internal const val FIELD_FIREBASE_ID = "firebaseId"
+/** Create a LiveData that emits a single value immediately. */
+fun <T> singleValueLiveData(obj: T): LiveData<T> {
+    return MutableLiveData<T>().apply { value = obj }
+}
