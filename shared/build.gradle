@@ -41,6 +41,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     implementation "androidx.lifecycle:lifecycle-livedata:$lifecycleVersion"
+    implementation "com.google.firebase:firebase-firestore:$firebaseFirestoreVersion"
 
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test:runner:$runnerVersion"

@@ -29,7 +29,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.findNavController
 import com.example.androidthings.endtoend.companion.R
 import com.example.androidthings.endtoend.companion.ViewModelFactory
-import com.example.androidthings.endtoend.companion.data.Gizmo
+import com.example.androidthings.endtoend.shared.data.model.Gizmo
 import com.example.androidthings.endtoend.shared.domain.Result
 import com.example.androidthings.endtoend.shared.domain.Result.Loading
 import com.example.androidthings.endtoend.shared.domain.successOr

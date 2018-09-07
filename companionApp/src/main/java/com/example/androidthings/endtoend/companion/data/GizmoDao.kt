@@ -17,6 +17,10 @@
 package com.example.androidthings.endtoend.companion.data
 
 import androidx.lifecycle.LiveData
+import com.example.androidthings.endtoend.shared.data.PATH_GIZMOS
+import com.example.androidthings.endtoend.shared.data.PATH_USERS
+import com.example.androidthings.endtoend.shared.data.asyncExecutor
+import com.example.androidthings.endtoend.shared.data.model.Gizmo
 import com.google.firebase.auth.UserInfo
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore

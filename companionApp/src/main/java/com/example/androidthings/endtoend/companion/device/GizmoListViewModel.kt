@@ -21,7 +21,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import com.example.androidthings.endtoend.companion.auth.AuthProvider
-import com.example.androidthings.endtoend.companion.data.Gizmo
+import com.example.androidthings.endtoend.shared.data.model.Gizmo
 import com.example.androidthings.endtoend.companion.domain.LoadUserGizmosUseCase
 import com.example.androidthings.endtoend.companion.util.Event
 import com.example.androidthings.endtoend.shared.domain.Result

@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-package com.example.androidthings.endtoend.companion.data
+package com.example.androidthings.endtoend.shared.data
 
-import com.google.firebase.firestore.IgnoreExtraProperties
+import java.util.concurrent.Executors
 
-/** A toggle-able feature (e.g. an LED) on a Gizmo. */
-@IgnoreExtraProperties
-data class Toggle(
-    var id: String = "",
-    var displayName: String = "",
-    var on: Boolean = false
-) {
-    // Only ID considered for equality
-    override fun equals(other: Any?) = (this === other) || (other is Toggle && id == other.id)
+val asyncExecutor = Executors.newFixedThreadPool(4)
 
-    // Only ID considered for equality
-    override fun hashCode() = id.hashCode()
-}
+// Firestore path elements
+const val PATH_EMAILS = "emails"
+const val PATH_USERS = "users"
+const val PATH_GIZMOS = "gizmos"
+
+// Firestore field names
+const val FIELD_FIREBASE_ID = "firebaseId"

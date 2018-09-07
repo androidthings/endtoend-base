@@ -16,8 +16,8 @@
 
 package com.example.androidthings.endtoend.companion.domain
 
-import com.example.androidthings.endtoend.companion.data.FIELD_FIREBASE_ID
-import com.example.androidthings.endtoend.companion.data.PATH_EMAILS
+import com.example.androidthings.endtoend.shared.data.FIELD_FIREBASE_ID
+import com.example.androidthings.endtoend.shared.data.PATH_EMAILS
 import com.example.androidthings.endtoend.shared.domain.Result
 import com.example.androidthings.endtoend.shared.domain.UseCase
 import com.google.android.gms.tasks.Task

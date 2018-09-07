@@ -17,7 +17,7 @@
 package com.example.androidthings.endtoend.companion.domain
 
 import androidx.lifecycle.LiveData
-import com.example.androidthings.endtoend.companion.data.Gizmo
+import com.example.androidthings.endtoend.shared.data.model.Gizmo
 import com.example.androidthings.endtoend.companion.data.GizmoDao
 import com.example.androidthings.endtoend.shared.domain.Result
 import com.example.androidthings.endtoend.shared.domain.UseCase

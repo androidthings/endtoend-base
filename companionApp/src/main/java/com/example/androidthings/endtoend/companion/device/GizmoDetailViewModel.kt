@@ -20,7 +20,7 @@ import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import com.example.androidthings.endtoend.companion.auth.AuthProvider
-import com.example.androidthings.endtoend.companion.data.Toggle
+import com.example.androidthings.endtoend.shared.data.model.Toggle
 import com.example.androidthings.endtoend.companion.data.ToggleCommand
 import com.example.androidthings.endtoend.companion.domain.LoadGizmoUseCase
 import com.example.androidthings.endtoend.companion.domain.LoadGizmoUseCaseParameters
