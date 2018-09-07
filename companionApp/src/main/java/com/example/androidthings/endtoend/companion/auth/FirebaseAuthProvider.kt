@@ -17,7 +17,6 @@
 package com.example.androidthings.endtoend.companion.auth
 
 import androidx.lifecycle.MutableLiveData
-import com.example.androidthings.endtoend.companion.data.FirebaseEmailDao
 import com.example.androidthings.endtoend.companion.domain.UploadUserIdUseCase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.UserInfo
@@ -26,7 +25,7 @@ import com.google.firebase.auth.UserInfo
 object FirebaseAuthProvider : AuthProvider {
 
     private val firebaseAuth = FirebaseAuth.getInstance()
-    private val uploadUserIdUseCase = UploadUserIdUseCase(FirebaseEmailDao())
+    private val uploadUserIdUseCase = UploadUserIdUseCase()
 
     private var authUiHelper: FirebaseAuthUiHelper? = null
 
