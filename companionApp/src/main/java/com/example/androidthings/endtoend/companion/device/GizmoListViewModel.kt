@@ -18,23 +18,18 @@ package com.example.androidthings.endtoend.companion.device
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import com.example.androidthings.endtoend.companion.auth.AuthProvider
-import com.example.androidthings.endtoend.shared.data.model.Gizmo
 import com.example.androidthings.endtoend.companion.domain.LoadUserGizmosUseCase
 import com.example.androidthings.endtoend.companion.util.Event
+import com.example.androidthings.endtoend.shared.data.model.Gizmo
 import com.example.androidthings.endtoend.shared.domain.Result
-import com.google.firebase.auth.UserInfo
+import com.example.androidthings.endtoend.shared.domain.execute
 
 class GizmoListViewModel(
     private val authProvider: AuthProvider,
     private val loadUserGizmosUseCase: LoadUserGizmosUseCase
 ) : ViewModel(), AuthProvider by authProvider {
-
-    private val userObserver = Observer<UserInfo?> { user ->
-        loadUserGizmosUseCase.execute(user)
-    }
 
     val gizmoListLiveData: LiveData<Result<List<Gizmo>>> = loadUserGizmosUseCase.observe()
 
@@ -43,13 +38,8 @@ class GizmoListViewModel(
         get() = _selectedGizmoLiveData
 
     init {
-        // trigger loading whenever the UserInfo changes
-        userLiveData.observeForever(userObserver)
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        userLiveData.removeObserver(userObserver)
+        // Load gizmos.
+        loadUserGizmosUseCase.execute()
     }
 
     fun selectGizmo(gizmo: Gizmo) {

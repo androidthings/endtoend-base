@@ -16,60 +16,38 @@
 
 package com.example.androidthings.endtoend.companion.device
 
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
 import com.example.androidthings.endtoend.companion.auth.AuthProvider
-import com.example.androidthings.endtoend.shared.data.model.Toggle
 import com.example.androidthings.endtoend.companion.data.ToggleCommand
 import com.example.androidthings.endtoend.companion.domain.LoadGizmoUseCase
-import com.example.androidthings.endtoend.companion.domain.LoadGizmoUseCaseParameters
 import com.example.androidthings.endtoend.companion.domain.SendToggleCommandUseCase
-import com.example.androidthings.endtoend.shared.domain.successOr
-import com.google.firebase.auth.UserInfo
+import com.example.androidthings.endtoend.shared.data.model.Toggle
 
 class GizmoDetailViewModel(
     private val authProvider: AuthProvider,
     private val loadGizmoUseCase: LoadGizmoUseCase,
     private val sendToggleCommandUseCase: SendToggleCommandUseCase
-) : ViewModel(), AuthProvider by authProvider {
+) : ViewModel() {
 
-    // We need both the user info and the gizmo ID before we can load anything. One of these is
-    // provided by another LiveData, so use a MediatorLiveData.
-    private val loadGizmoArgs = MediatorLiveData<LoadGizmoUseCaseParameters>()
-    private val loadGizmoArgsObserver = Observer<LoadGizmoUseCaseParameters> {
-        loadGizmoUseCase.execute(it)
-    }
+    // We can't load until we have a gizmo ID, so use this to check.
+    private var gizmoId: String? = null
 
     val gizmoLiveData = loadGizmoUseCase.observe()
 
-    init {
-        loadGizmoArgs.observeForever(loadGizmoArgsObserver)
-        loadGizmoArgs.addSource(userLiveData) { user -> setUser(user) }
-    }
-
-    override fun onCleared() {
-        super.onCleared()
-        loadGizmoArgs.removeObserver(loadGizmoArgsObserver)
-    }
-
-    private fun setUser(userInfo: UserInfo?) {
-        val args = loadGizmoArgs.value ?: LoadGizmoUseCaseParameters(null, null)
-        loadGizmoArgs.value = args.copy(userInfo = userInfo)
-    }
-
     fun setGizmoId(gizmoId: String) {
-        val args = loadGizmoArgs.value ?: LoadGizmoUseCaseParameters(null, null)
-        loadGizmoArgs.value = args.copy(gizmoId = gizmoId)
+        if (this.gizmoId != gizmoId) {
+            this.gizmoId = gizmoId
+            loadGizmoUseCase.execute(gizmoId)
+        }
     }
 
     fun onToggleClicked(toggle: Toggle) {
-        val userId = userLiveData.value?.uid ?: return
-        val gizmoId = gizmoLiveData.value?.successOr(null)?.id ?: return
+        val gizmoId = gizmoId ?: return
+        val user = authProvider.userLiveData.value ?: return
         // Send toggle command
         sendToggleCommandUseCase.execute(
             ToggleCommand(
-                userId, gizmoId, toggle.id, !toggle.on, System.currentTimeMillis()
+                user.uid, gizmoId, toggle.id, !toggle.on, System.currentTimeMillis()
             )
         )
     }

@@ -23,7 +23,6 @@ import com.example.androidthings.endtoend.shared.data.PATH_GIZMOS
 import com.example.androidthings.endtoend.shared.data.PATH_USERS
 import com.example.androidthings.endtoend.shared.data.asyncExecutor
 import com.example.androidthings.endtoend.shared.data.model.Gizmo
-import com.google.firebase.auth.UserInfo
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.EventListener
@@ -35,7 +34,7 @@ import com.google.firebase.firestore.QuerySnapshot
 interface GizmoDao {
     fun setUser(userId: String?)
     fun getObservableGizmos(): LiveData<List<Gizmo>>
-    fun getObservableGizmo(userInfo: UserInfo, gizmoId: String): LiveData<Gizmo?>
+    fun getObservableGizmo(gizmoId: String): LiveData<Gizmo?>
 }
 
 class FirestoreGizmoDao : GizmoDao {
@@ -118,9 +117,9 @@ class FirestoreGizmoDao : GizmoDao {
 
     override fun getObservableGizmos(): LiveData<List<Gizmo>> = liveData
 
-    override fun getObservableGizmo(userInfo: UserInfo, gizmoId: String): LiveData<Gizmo?> {
+    override fun getObservableGizmo(gizmoId: String): LiveData<Gizmo?> {
         return liveData.map { gizmos ->
-            gizmos.find { it.id == gizmoId }
+            gizmos?.find { it.id == gizmoId }
         }
     }
 }
