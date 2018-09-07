@@ -51,7 +51,6 @@ class LoadUserGizmosUseCase(
 
             try {
                 // Start querying and add the new source
-                gizmoDao.setUser(parameters.uid)
                 sourceLiveData = gizmoDao.getObservableGizmos().also { source ->
                     result.addSource(source) { value ->
                         result.postValue(

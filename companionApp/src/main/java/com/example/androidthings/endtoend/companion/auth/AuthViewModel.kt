@@ -20,11 +20,13 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
+import com.example.androidthings.endtoend.companion.data.GizmoDao
 import com.example.androidthings.endtoend.companion.util.Event
 import com.google.firebase.auth.UserInfo
 
 class AuthViewModel(
-    private val authProvider: AuthProvider
+    private val authProvider: AuthProvider,
+    private val gizmoDao: GizmoDao
 ) : ViewModel(), AuthProvider by authProvider {
 
     // We don't want clients to be able to set what is stored in our MutableLiveData, so we expose
@@ -43,6 +45,7 @@ class AuthViewModel(
     private val userObserver = Observer<UserInfo?> { user ->
         resolveAuthStateModel(user)
         setAuthUiModel(authUiModel.copy(initializing = false, user = user))
+        gizmoDao.setUser(user?.uid)
     }
 
     init {

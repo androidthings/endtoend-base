@@ -48,7 +48,7 @@ class ViewModelFactory private constructor(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
         return when (modelClass) {
-            AuthViewModel::class.java -> AuthViewModel(authProvider) as T
+            AuthViewModel::class.java -> AuthViewModel(authProvider, gizmoDao) as T
             GizmoListViewModel::class.java ->
                 GizmoListViewModel(authProvider, loadUserGizmosUseCase) as T
             GizmoDetailViewModel::class.java ->
