@@ -17,8 +17,8 @@
 package com.example.androidthings.endtoend.companion.domain
 
 import androidx.lifecycle.LiveData
-import com.example.androidthings.endtoend.shared.data.model.Gizmo
 import com.example.androidthings.endtoend.companion.data.GizmoDao
+import com.example.androidthings.endtoend.shared.data.model.Gizmo
 import com.example.androidthings.endtoend.shared.domain.Result
 import com.example.androidthings.endtoend.shared.domain.UseCase
 import com.google.firebase.auth.UserInfo
@@ -51,9 +51,16 @@ class LoadUserGizmosUseCase(
 
             try {
                 // Start querying and add the new source
-                sourceLiveData = gizmoDao.getObservableGizmos(parameters).also { source ->
-                    result.addSource(source) {
-                        result.postValue(Result.Success(source.value ?: emptyList()))
+                gizmoDao.setUser(parameters.uid)
+                sourceLiveData = gizmoDao.getObservableGizmos().also { source ->
+                    result.addSource(source) { value ->
+                        result.postValue(
+                            if (value == null) {
+                                Result.Loading
+                            } else {
+                                Result.Success(value)
+                            }
+                        )
                     }
                 }
             } catch (e: Exception) {
