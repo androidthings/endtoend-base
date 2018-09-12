@@ -20,16 +20,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import com.example.androidthings.endtoend.companion.R
-import com.example.androidthings.endtoend.shared.data.model.Toggle
+import com.example.androidthings.endtoend.companion.data.model.ToggleDetail
 
 class ToggleListAdapter(
     private val viewModel: GizmoDetailViewModel
-) : ListAdapter<Toggle, ToggleViewHolder>(ToggleDiff) {
+) : ListAdapter<ToggleDetail, ToggleViewHolder>(ToggleDetailDiff) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ToggleViewHolder {
         return ToggleViewHolder(
@@ -50,32 +50,48 @@ class ToggleViewHolder(
     private val viewModel: GizmoDetailViewModel,
     private val nameView: TextView = itemView.findViewById(R.id.toggle_name),
     private val iconView: ImageView = itemView.findViewById(R.id.toggle_icon),
-    private val statusView: TextView = itemView.findViewById(R.id.toggle_status)
+    private val statusView: TextView = itemView.findViewById(R.id.toggle_status),
+    private val progressView: ProgressBar = itemView.findViewById(R.id.toggle_progress)
 ) : ViewHolder(itemView) {
 
-    private lateinit var toggle: Toggle
+    private lateinit var toggleDetail: ToggleDetail
 
     init {
         itemView.setOnClickListener {
-            viewModel.onToggleClicked(toggle)
+            viewModel.onToggleClicked(toggleDetail.toggle)
         }
     }
 
-    internal fun bind(item: Toggle) {
-        toggle = item
+    internal fun bind(item: ToggleDetail) {
+        toggleDetail = item
 
-        nameView.text = item.displayName
+        nameView.text = item.toggle.displayName
         iconView.setImageResource(
-            if (item.on) R.drawable.ic_lightbulb_filled else R.drawable.ic_lightbulb_outline
+            if (item.toggle.on) R.drawable.ic_lightbulb_filled else R.drawable.ic_lightbulb_outline
         )
-        statusView.text = if (item.on) "ON" else "OFF"
+        statusView.text = if (item.toggle.on) "ON" else "OFF"
+
+        if (item.progress) {
+            progressView.visibility = View.VISIBLE
+            statusView.visibility = View.GONE
+            itemView.isClickable = false
+        } else {
+            progressView.visibility = View.GONE
+            statusView.visibility = View.VISIBLE
+            itemView.isClickable = true
+        }
     }
 }
 
-object ToggleDiff : DiffUtil.ItemCallback<Toggle>() {
-    override fun areItemsTheSame(oldItem: Toggle, newItem: Toggle) = (oldItem == newItem)
+object ToggleDetailDiff : DiffUtil.ItemCallback<ToggleDetail>() {
+    override fun areItemsTheSame(oldItem: ToggleDetail, newItem: ToggleDetail) =
+        (oldItem == newItem)
 
-    override fun areContentsTheSame(oldItem: Toggle, newItem: Toggle): Boolean {
-        return (oldItem.displayName == newItem.displayName && oldItem.on == newItem.on)
+    override fun areContentsTheSame(oldItem: ToggleDetail, newItem: ToggleDetail): Boolean {
+        val oldToggle = oldItem.toggle
+        val newToggle = newItem.toggle
+        return oldToggle.displayName == newToggle.displayName &&
+            oldToggle.on == newToggle.on &&
+            oldItem.progress == newItem.progress
     }
 }

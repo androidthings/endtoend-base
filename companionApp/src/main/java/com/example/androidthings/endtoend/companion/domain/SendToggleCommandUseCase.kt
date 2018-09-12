@@ -18,6 +18,7 @@ package com.example.androidthings.endtoend.companion.domain
 
 import android.util.Log
 import com.example.androidthings.endtoend.companion.data.ToggleCommand
+import com.example.androidthings.endtoend.companion.data.ToggleCommandDao
 import com.example.androidthings.endtoend.shared.domain.Result
 import com.example.androidthings.endtoend.shared.domain.UseCase
 import com.example.androidthings.endtoend.shared.util.jsonArray
@@ -26,6 +27,12 @@ import com.google.firebase.functions.FirebaseFunctions
 import org.json.JSONObject
 import java.util.UUID
 
+/** Use case parameters. */
+data class SendToggleCommandParameters(
+    val userId: String,
+    val command: ToggleCommand
+)
+
 /** Wrapper class that reports the result state of a given request. */
 data class SendToggleCommandResult(
     val command: ToggleCommand,
@@ -33,16 +40,36 @@ data class SendToggleCommandResult(
 )
 
 /** Use case that sends a toggle request to a Cloud Function. */
-class SendToggleCommandUseCase : UseCase<ToggleCommand, SendToggleCommandResult>() {
+class SendToggleCommandUseCase(
+    private val toggleCommandDao: ToggleCommandDao
+) : UseCase<SendToggleCommandParameters, SendToggleCommandResult>() {
 
     private val firebaseFunctions = FirebaseFunctions.getInstance()
 
-    override fun execute(parameters: ToggleCommand) {
-        val json = commandToJsonPayload(parameters)
+    override fun execute(parameters: SendToggleCommandParameters) {
+        scheduler.execute {
+            executeSync(parameters)
+        }
+    }
+
+    private fun executeSync(parameters: SendToggleCommandParameters) {
+        val command = parameters.command
+        if (!toggleCommandDao.addCommand(command)) {
+            // There's already a command for this toggle, so report an error.
+            result.postValue(SendToggleCommandResult(
+                command,
+                Result.Error(IllegalArgumentException("A command already exists for this toggle")))
+            )
+            return
+        }
+
+        val json = buildJsonPayload(parameters)
         if (json == null) {
+            // Nothing to send, so make sure the command is removed from local storage.
+            toggleCommandDao.removeCommand(command)
             result.postValue(
                 SendToggleCommandResult(
-                    parameters,
+                    command,
                     Result.Error(IllegalArgumentException("Error converting command to JSON"))
                 )
             )
@@ -51,7 +78,7 @@ class SendToggleCommandUseCase : UseCase<ToggleCommand, SendToggleCommandResult>
 
         // Notify that we're loading
         result.postValue(
-            SendToggleCommandResult(parameters, Result.Loading)
+            SendToggleCommandResult(command, Result.Loading)
         )
 
         // Call the cloud function
@@ -60,22 +87,24 @@ class SendToggleCommandUseCase : UseCase<ToggleCommand, SendToggleCommandResult>
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     result.postValue(
-                        SendToggleCommandResult(parameters, Result.success)
+                        SendToggleCommandResult(command, Result.success)
                     )
                 } else {
+                    // Sending failed, so make sure the command is removed from local storage.
+                    toggleCommandDao.removeCommand(command)
                     val ex = task.exception ?: RuntimeException("Task failed with unknown error")
                     result.postValue(
-                        SendToggleCommandResult(parameters, Result.Error(ex))
+                        SendToggleCommandResult(command, Result.Error(ex))
                     )
                 }
             }
     }
 
     /**
-     * Convert a [ToggleCommand] to a JSON payload for the Cloud Function. Returns null if the
-     * conversion fails.
+     * Create a JSON payload for the Cloud Function. Returns null if the conversion fails.
      */
-    private fun commandToJsonPayload(command: ToggleCommand): JSONObject? {
+    private fun buildJsonPayload(parameters: SendToggleCommandParameters): JSONObject? {
+        val command = parameters.command
         try {
             return jsonObject(
                 "requestId" to UUID.randomUUID().toString(),
@@ -90,7 +119,7 @@ class SendToggleCommandUseCase : UseCase<ToggleCommand, SendToggleCommandResult>
                                             "id" to command.gizmoId,
                                             "customData" to jsonObject(
                                                 // Cloud Function needs this to look up FCM token
-                                                "userId" to command.userId
+                                                "userId" to parameters.userId
                                             )
                                         )
                                     ),

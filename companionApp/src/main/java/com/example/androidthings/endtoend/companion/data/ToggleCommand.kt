@@ -16,15 +16,16 @@
 
 package com.example.androidthings.endtoend.companion.data
 
+import com.google.firebase.Timestamp
+
 /** A user-initiated command to toggle an LED. */
 data class ToggleCommand(
-    val userId: String,
     val gizmoId: String,
     val toggleId: String,
     val targetState: Boolean,
-    val requestTime: Long
+    val requestTime: Timestamp = Timestamp.now()
 ) {
-    val requestKey = "${userId}_${gizmoId}_${toggleId}"
+    val requestKey = createKey(gizmoId, toggleId)
 
     // only requestKey considered for equality
     override fun equals(other: Any?): Boolean {
@@ -33,4 +34,10 @@ data class ToggleCommand(
 
     // only requestKey considered for equality
     override fun hashCode(): Int = requestKey.hashCode()
+
+    companion object {
+        fun createKey(gizmoId: String, toggleId: String): String {
+            return "${gizmoId}_${toggleId}"
+        }
+    }
 }

@@ -25,7 +25,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.example.androidthings.endtoend.companion.R
 import com.example.androidthings.endtoend.companion.ViewModelFactory
-import com.example.androidthings.endtoend.shared.data.model.Gizmo
+import com.example.androidthings.endtoend.companion.data.model.GizmoDetail
 import com.example.androidthings.endtoend.shared.domain.Result
 import com.example.androidthings.endtoend.shared.domain.Result.Loading
 import com.example.androidthings.endtoend.shared.domain.successOr
@@ -59,17 +59,17 @@ class GizmoDetailFragment : Fragment() {
         adapter = ToggleListAdapter(gizmoDetailViewModel)
         gizmo_toggles.adapter = adapter
 
-        gizmoDetailViewModel.gizmoLiveData.observe(this, Observer { result -> bindGizmo(result) })
+        gizmoDetailViewModel.gizmoLiveData.observe(this, Observer { result -> bindDetails(result) })
     }
 
-    private fun bindGizmo(result: Result<Gizmo?>) {
-        val gizmo = result.successOr(null)
+    private fun bindDetails(result: Result<GizmoDetail?>) {
+        val detail = result.successOr(null)
         for (v in listOf(gizmo_name, gizmo_toggles)) {
-            v.visibility = if (gizmo == null) View.GONE else View.VISIBLE
+            v.visibility = if (detail == null) View.GONE else View.VISIBLE
         }
-        gizmo?.let {
-            gizmo_name.text = it.displayName
-            adapter.submitList(it.toggles)
+        detail?.let {
+            gizmo_name.text = it.gizmo.displayName
+            adapter.submitList(it.toggleDetails)
         }
 
         progress.visibility = if (result is Loading) View.VISIBLE else View.GONE
