@@ -20,6 +20,7 @@ buildscript {
     ext {
         appcompatVersion = '1.0.0-beta01'
         constraintlayoutVersion = '1.1.2'
+        coreKtxVersion = '1.0.0'
         espressoVersion = '3.1.0-alpha4'
         firebaseAuthVersion = '16.0.2'
         firebaseCoreVersion = '16.0.1'

@@ -33,9 +33,9 @@ class GizmoListViewModel(
 
     val gizmoListLiveData: LiveData<Result<List<Gizmo>>> = loadUserGizmosUseCase.observe()
 
-    private val _selectedGizmoLiveData = MutableLiveData<Event<Gizmo>>()
+    private val selectedGizmoLiveDataInternal = MutableLiveData<Event<Gizmo>>()
     val selectedGizmoLiveData: LiveData<Event<Gizmo>>
-        get() = _selectedGizmoLiveData
+        get() = selectedGizmoLiveDataInternal
 
     init {
         // Load gizmos.
@@ -43,6 +43,6 @@ class GizmoListViewModel(
     }
 
     fun selectGizmo(gizmo: Gizmo) {
-        _selectedGizmoLiveData.postValue(Event(gizmo))
+        selectedGizmoLiveDataInternal.postValue(Event(gizmo))
     }
 }

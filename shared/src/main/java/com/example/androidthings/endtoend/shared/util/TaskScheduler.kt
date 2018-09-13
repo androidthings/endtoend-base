@@ -18,12 +18,15 @@ package com.example.androidthings.endtoend.shared.util
 
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit.MILLISECONDS
 
 private const val NUMBER_OF_THREADS = 4
 
 interface Scheduler {
 
     fun execute(task: () -> Unit)
+
+    fun executeDelayed(delayMillis: Long, task: () -> Unit)
 }
 
 /**
@@ -41,6 +44,10 @@ object DefaultScheduler : Scheduler {
     override fun execute(task: () -> Unit) {
         delegate.execute(task)
     }
+
+    override fun executeDelayed(delayMillis: Long, task: () -> Unit) {
+        delegate.executeDelayed(delayMillis, task)
+    }
 }
 
 /**
@@ -48,19 +55,27 @@ object DefaultScheduler : Scheduler {
  */
 object AsyncScheduler : Scheduler {
 
-    private val executorService = Executors.newFixedThreadPool(NUMBER_OF_THREADS)
+    private val executorService = Executors.newScheduledThreadPool(NUMBER_OF_THREADS)
 
     override fun execute(task: () -> Unit) {
         executorService.execute(task)
     }
+
+    override fun executeDelayed(delayMillis: Long, task: () -> Unit) {
+        executorService.schedule(task, delayMillis, MILLISECONDS)
+    }
 }
 
 /**
- * Scheduler that runs tasks synchronously.
+ * Scheduler that runs tasks synchronously. It does not support delayed execution.
  */
 object SyncScheduler : Scheduler {
 
     override fun execute(task: () -> Unit) {
+        task()
+    }
+
+    override fun executeDelayed(delayMillis: Long, task: () -> Unit) {
         task()
     }
 }

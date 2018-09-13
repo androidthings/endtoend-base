@@ -25,8 +25,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
-import com.example.androidthings.endtoend.companion.data.model.ToggleDetail
 import com.example.androidthings.endtoend.companion.R
+import com.example.androidthings.endtoend.companion.data.model.ToggleDetail
 
 
 class ToggleListAdapter(

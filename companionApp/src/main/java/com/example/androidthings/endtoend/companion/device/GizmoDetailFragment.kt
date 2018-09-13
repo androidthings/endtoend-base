@@ -20,6 +20,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -60,6 +61,10 @@ class GizmoDetailFragment : Fragment() {
         gizmo_toggles.adapter = adapter
 
         gizmoDetailViewModel.gizmoLiveData.observe(this, Observer { result -> bindDetails(result) })
+        gizmoDetailViewModel.sendToggleCommandErrorLiveData.observe(this, Observer { event ->
+            event.getContentIfNotHandled() ?: return@Observer
+            Toast.makeText(requireContext(), "Error setting LED", Toast.LENGTH_SHORT).show()
+        })
     }
 
     private fun bindDetails(result: Result<GizmoDetail?>) {

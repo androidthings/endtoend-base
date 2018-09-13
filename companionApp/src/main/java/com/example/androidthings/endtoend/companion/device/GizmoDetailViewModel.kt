@@ -16,13 +16,17 @@
 
 package com.example.androidthings.endtoend.companion.device
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.ViewModel
 import com.example.androidthings.endtoend.companion.auth.AuthProvider
 import com.example.androidthings.endtoend.companion.data.ToggleCommand
 import com.example.androidthings.endtoend.companion.domain.LoadGizmoDetailUseCase
 import com.example.androidthings.endtoend.companion.domain.SendToggleCommandParameters
 import com.example.androidthings.endtoend.companion.domain.SendToggleCommandUseCase
+import com.example.androidthings.endtoend.companion.util.Event
 import com.example.androidthings.endtoend.shared.data.model.Toggle
+import com.example.androidthings.endtoend.shared.domain.Result
 
 class GizmoDetailViewModel(
     private val authProvider: AuthProvider,
@@ -34,6 +38,19 @@ class GizmoDetailViewModel(
     private var gizmoId: String? = null
 
     val gizmoLiveData = loadGizmoDetailUseCase.observe()
+
+    // Used to show error events in the UI.
+    private val sendToggleCommandErrorLiveDataInternal = MediatorLiveData<Event<ToggleCommand>>()
+    val sendToggleCommandErrorLiveData: LiveData<Event<ToggleCommand>>
+        get() = sendToggleCommandErrorLiveDataInternal
+
+    init {
+        sendToggleCommandErrorLiveDataInternal.addSource(sendToggleCommandUseCase.observe()) {
+            if (it.result is Result.Error) {
+                sendToggleCommandErrorLiveDataInternal.postValue(Event(it.command))
+            }
+        }
+    }
 
     fun setGizmoId(gizmoId: String) {
         if (this.gizmoId != gizmoId) {
@@ -49,8 +66,11 @@ class GizmoDetailViewModel(
         sendToggleCommandUseCase.execute(
             SendToggleCommandParameters(
                 user.uid,
-                ToggleCommand(gizmoId, toggle.id, !toggle.on)
+                ToggleCommand(gizmoId, toggle.id, !toggle.on),
+                TOGGLE_COMMAND_TIMEOUT
             )
         )
     }
 }
+
+private const val TOGGLE_COMMAND_TIMEOUT = 1000L * 10 // 10 seconds

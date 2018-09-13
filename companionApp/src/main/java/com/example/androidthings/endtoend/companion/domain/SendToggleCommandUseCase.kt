@@ -26,11 +26,13 @@ import com.example.androidthings.endtoend.shared.util.jsonObject
 import com.google.firebase.functions.FirebaseFunctions
 import org.json.JSONObject
 import java.util.UUID
+import java.util.concurrent.TimeoutException
 
 /** Use case parameters. */
 data class SendToggleCommandParameters(
     val userId: String,
-    val command: ToggleCommand
+    val command: ToggleCommand,
+    val timeout: Long = 0
 )
 
 /** Wrapper class that reports the result state of a given request. */
@@ -58,7 +60,7 @@ class SendToggleCommandUseCase(
             // There's already a command for this toggle, so report an error.
             result.postValue(SendToggleCommandResult(
                 command,
-                Result.Error(IllegalArgumentException("A command already exists for this toggle")))
+                Result.Error(IllegalArgumentException("A request already exists for this toggle")))
             )
             return
         }
@@ -86,9 +88,11 @@ class SendToggleCommandUseCase(
             .call(json)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    result.postValue(
+                    if (parameters.timeout > 0) {
+                        scheduleDelayedTimeout(parameters)
+                    } else {
                         SendToggleCommandResult(command, Result.success)
-                    )
+                    }
                 } else {
                     // Sending failed, so make sure the command is removed from local storage.
                     toggleCommandDao.removeCommand(command)
@@ -98,6 +102,22 @@ class SendToggleCommandUseCase(
                     )
                 }
             }
+    }
+
+    private fun scheduleDelayedTimeout(parameters: SendToggleCommandParameters) {
+        scheduler.executeDelayed(parameters.timeout) {
+            val removed = toggleCommandDao.removeCommand(parameters.command)
+            result.postValue(
+                SendToggleCommandResult(
+                    parameters.command,
+                    if (removed) {
+                        Result.Error(TimeoutException("Toggle request timed out"))
+                    } else {
+                        Result.success
+                    }
+                )
+            )
+        }
     }
 
     /**
