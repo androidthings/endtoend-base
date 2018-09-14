@@ -22,6 +22,8 @@ const admin = require('firebase-admin');
 admin.initializeApp();
 
 const db = admin.firestore();
+const settings = {timestampsInSnapshots: true};
+db.settings(settings);
 
 const app = smarthome({
   debug: true,
@@ -41,8 +43,10 @@ const getUser = async (headers) => {
   //   email: 'example@email.com'
   // }
   // Look up this email in our database
-  const emailDoc = await db.collection('emails').doc(email).get().data();
-  return emailDoc.firebaseId
+  console.log(accessToken, email);
+  const emailDoc = await db.collection('emails').doc(email).get();
+  const emailData = emailDoc.data();
+  return emailData.firebaseId
 }
 
 app.onSync(async (body, headers) => {
@@ -59,12 +63,12 @@ app.onSync(async (body, headers) => {
     smartHome: true
   })
 
-  const userdevices = db.collection('users').doc(userid).collection('devices');
+  const userdevices = db.collection('users').doc(userid).collection('gizmos');
   const snapshot = await userdevices.get()
   const devices = []
   snapshot.forEach(doc => {
     const data = doc.data()
-    devices.push({
+    const device = {
       id: doc.id,
       type: data.type,
       traits: data.traits,
@@ -79,7 +83,23 @@ app.onSync(async (body, headers) => {
         hwVersion: data.hwVersion,
         swVersion: data.swVersion,
       },
-    })
+      willReportState: false,
+      attributes: {}
+    }
+    if (data.traits.indexOf('action.devices.traits.Toggles') > -1) {
+      // Attributes for toggles
+      device.attributes.availableToggles = [];
+      for (const toggle of data.toggles) {
+        device.attributes.availableToggles.push({
+          name: toggle.toggleId,
+          name_values: [{
+            name_synonym: [toggle.displayName],
+            lang: "en"
+          }],
+        })
+      }
+    }
+    devices.push(device)
   })
 
   const payload = {
@@ -94,7 +114,7 @@ app.onSync(async (body, headers) => {
 });
 
 const queryDevice = async (userid, deviceId) => {
-  const devicestates = db.collection('users').doc(userid).collection('devices').doc(deviceId)
+  const devicestates = db.collection('users').doc(userid).collection('gizmos').doc(deviceId)
   const doc = await devicestates.get()
   return doc.data().states
 }
@@ -105,7 +125,6 @@ app.onQuery(async (body, headers) => {
   const payload = {
     devices: {},
   };
-  const queryPromises = [];
   for (const input of body.inputs) {
     for (const device of input.payload.devices) {
       const deviceId = device.id;
@@ -136,18 +155,41 @@ app.onExecute(async (body, headers) => {
     for (const command of input.payload.commands) {
       for (const device of command.devices) {
         const deviceId = device.id;
-        const devicestates = db.collection('users').doc(userid).collection('devices').doc(deviceId)
+        const deviceStates = db.collection('users').doc(userid).collection('gizmos').doc(deviceId)
+        const deviceDocument = await deviceStates.get();
+        const deviceData = deviceDocument.data();
         payload.commands[0].ids.push(deviceId);
         for (const execution of command.execution) {
           const execCommand = execution.command;
           const {params} = execution;
           switch (execCommand) {
-            case 'action.devices.commands.OnOff':
-              await devicestates.update({
+            case 'action.devices.commands.OnOff': {
+              await deviceStates.update({
                 'states.on': params.on
               })
               payload.commands[0].states.on = params.on;
               break;
+            }
+            case 'action.devices.commands.SetToggles': {
+              // Each value will be a boolean to be on or off
+              for (const toggle of Object.keys(params.updateToggleSettings)) {
+                const toggleValue = params.updateToggleSettings[toggle];
+                await deviceStates.update({
+                  'states.currentToggleSettings': {
+                    [toggle]: toggleValue
+                  }
+                })
+                // Identify the toggle index and update the field
+                const toggleArray = deviceData.toggles;
+                for (let i = 0; i < toggleArray.length; i++) {
+                  if (toggleArray[i].toggleId === toggle) {
+                    deviceData.toggles[i].on = toggleValue;
+                    await deviceStates.update(deviceData);
+                  }
+                }
+              }
+              break;
+            }
           }
         }
       }
@@ -172,7 +214,8 @@ exports.smarthome = functions.https.onRequest(app);
 
 const isSmartHomeEnabled = async (userId) => {
   // Check that smart home is enabled
-  const {smartHome}  = await db.collection('users').doc(userId).get().data();
+  const userDocument = await db.collection('users').doc(userId).get();
+  const {smartHome}  = userDocument.data();
   if (!smartHome) {
     console.warning(`User ${userId} is not connected to smart home`)
   }
@@ -180,7 +223,7 @@ const isSmartHomeEnabled = async (userId) => {
 }
 
 exports.onDeviceCreate = functions.firestore
-    .document('users/{userId}/devices/{deviceId}')
+    .document('users/{userId}/gizmos/{deviceId}')
     .onCreate(async (snap, context) => {
       const performAction = await isSmartHomeEnabled(context.params.userId)
       if (!performAction) return {}
@@ -192,7 +235,7 @@ exports.onDeviceCreate = functions.firestore
     });
 
 exports.onDeviceDelete = functions.firestore
-    .document('users/{userId}/devices/{deviceId}')
+    .document('users/{userId}/gizmos/{deviceId}')
     .onDelete(async (snap, context) => {
       const performAction = await isSmartHomeEnabled(context.params.userId)
       if (!performAction) return {}
@@ -204,7 +247,7 @@ exports.onDeviceDelete = functions.firestore
     });
 
 exports.onDeviceStateUpdate = functions.firestore
-    .document('users/{userId}/devices/{deviceId}')
+    .document('users/{userId}/gizmos/{deviceId}')
     .onUpdate(async (change, context) => {
       const performAction = await isSmartHomeEnabled(context.params.userId)
       if (!performAction) return {}
