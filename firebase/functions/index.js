@@ -158,7 +158,23 @@ app.onExecute(async (body, headers) => {
         const deviceStates = db.collection('users').doc(userid).collection('gizmos').doc(deviceId)
         const deviceDocument = await deviceStates.get();
         const deviceData = deviceDocument.data();
-        payload.commands[0].ids.push(deviceId);
+
+        // Send FCM to device
+        try {
+          await sendFirebaseCloudMessage(body, deviceData.fcmToken);
+          // Success
+          payload.commands[0].ids.push(deviceId);
+        } catch (e) {
+          // Error sending cloud message -- return an error.
+          payload.commands.push({
+            ids: [deviceId],
+            status: 'ERROR',
+            errorCode: 'deviceOffline' // The target is unreachable
+          });
+          console.error('Error sending FCM', e);
+          continue; // Exit this iteration now so we don't update the database
+        }
+
         for (const execution of command.execution) {
           const execCommand = execution.command;
           const {params} = execution;
@@ -209,6 +225,14 @@ app.onDisconnect(async (body, headers) => {
     smartHome: false
   })
 })
+
+const sendFirebaseCloudMessage = async (executePayload, cloudToken) => {
+  const message = {
+    data: executePayload,
+    token: cloudToken
+  };
+  await admin.messaging().send(message);
+}
 
 exports.smarthome = functions.https.onRequest(app);
 
