@@ -43,8 +43,9 @@ class MainActivity : AppCompatActivity() {
         gpioManager.initGpio()
 
         firebaseAuth = FirebaseDeviceAuthenticator()
-
         firebaseAuth.initAuth(this)
+
+        FirestoreManager.init(this)
     }
 
     fun initFcmReceiver() {
