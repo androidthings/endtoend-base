@@ -16,16 +16,24 @@
 
 package com.example.androidthings.endtoend
 
+import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.core.content.edit
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import java.util.*
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 
     private val TAG = "MyFirebaseMsgService"
+
+    private val prefKey = "fcmKeystore"
+
+    private val fcmTokenKey = "fcmKey"
+
 
     /**
      * Called when message is received.
@@ -55,6 +63,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         Log.d(TAG, "Refreshed token: $token")
 
+        // Store FCM token locally
+        val sharedPreferences =  getSharedPreferences( prefKey, Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            putString(fcmTokenKey, token)
+        }
+
+        // Send FCM token up to firestore in order to send commands down to device
         sendRegistrationToServer(token)
     }
 
@@ -67,6 +82,6 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
      * @param token The new token.
      */
     private fun sendRegistrationToServer(token: String) {
-        // TODO: Implement this method to send token to your app server.
+        FirestoreManager.updateFcmToken(token)
     }
 }
