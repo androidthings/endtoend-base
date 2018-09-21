@@ -43,13 +43,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
 
         Log.d(TAG, "payload is: " + remoteMessage.data.toString())
-        Log.d(TAG, "notification is: " + remoteMessage.notification?.body)
 
         val intent = Intent().apply {
             action = FcmContract.FCM_INTENT_ACTION
-            putExtra(FcmContract.COMMAND_KEY, FcmContract.CMD_TOGGLE)
-            putExtra(FcmContract.INDEX_KEY,
-                remoteMessage.data.getValue(FcmContract.INDEX_KEY).toInt())
+            val jsonPayload = remoteMessage.data[FcmContract.FCM_PAYLOAD_KEY]
+            putExtra(FcmContract.COMMAND_KEY, jsonPayload)
         }
 
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)

@@ -27,7 +27,7 @@ data class ToggleDetail(
     val progress: Boolean = false
 ) {
     override fun equals(other: Any?): Boolean {
-        return other == this || (other is ToggleDetail && other.toggle == this.toggle)
+        return other === this ||  (other is ToggleDetail && other.toggle == this.toggle)
     }
 
     override fun hashCode() = toggle.hashCode()

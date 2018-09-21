@@ -23,13 +23,17 @@ import androidx.lifecycle.OnLifecycleEvent
 import com.google.android.things.pio.Gpio
 import com.google.android.things.pio.PeripheralManager
 
-class GpioManager(val lifecycle: Lifecycle) {
+interface OnLedStateChangedListener {
+    fun onStateChanged ()
+}
+
+class GpioManager(val lifecycle: Lifecycle, var listener : OnLedStateChangedListener) {
 
     val TAG: String = "GpioManager"
 
     // The pin names for each dev board are available in the hardware section of the Android Things
-// site at https://developer.android.com/things/hardware
-// e.g the IMX7d pinout is at https://developer.android.com/things/hardware/imx7d-pico-io
+    // site at https://developer.android.com/things/hardware
+    // e.g the IMX7d pinout is at https://developer.android.com/things/hardware/imx7d-pico-io
     val BUTTON_PINS = arrayOf(
         "GPIO6_IO14",
         "GPIO6_IO15",
@@ -70,13 +74,18 @@ class GpioManager(val lifecycle: Lifecycle) {
             button.registerGpioCallback {
                 Log.i(TAG, "Button $index Pressed.")
                 toggleLed(index)
+                listener.onStateChanged()
                 return@registerGpioCallback true
             }
         }
     }
 
     fun toggleLed(ledNum: Int) {
-        leds[ledNum].value = !leds[ledNum].value
+        setLed(ledNum, !leds[ledNum].value)
+    }
+
+    fun setLed(ledNum: Int, isOn : Boolean) {
+        leds[ledNum].value = isOn
     }
 
     fun initLed(pinName: String): Gpio {
@@ -110,9 +119,7 @@ class GpioManager(val lifecycle: Lifecycle) {
      * https://developer.android.com/topic/libraries/architecture/lifecycle
     */
     class LifecycleAwareGpio(
-        var gpio: Gpio,
-        val gpioInit: (String) -> Gpio,
-        var pinName: String = gpio.name
+        var gpio: Gpio
     ) : Gpio by gpio, LifecycleObserver {
 
         var closed: Boolean = false
@@ -125,15 +132,6 @@ class GpioManager(val lifecycle: Lifecycle) {
             Log.i(TAG, "Gpio closed.")
         }
 
-        @OnLifecycleEvent(Lifecycle.Event.ON_START)
-        fun onStart() {
-            if (closed) {
-                gpio = gpioInit(pinName)
-                pinName = gpio.name
-                closed = false
-            }
-        }
-
         override fun close() {
             gpio.close()
             closed = true
@@ -141,7 +139,7 @@ class GpioManager(val lifecycle: Lifecycle) {
     }
 
     fun Gpio.addToLifecycle(lifecycle: Lifecycle, gpioInit: (String) -> Gpio): Gpio {
-        val observer: Gpio = LifecycleAwareGpio(this, gpioInit)
+        val observer: Gpio = LifecycleAwareGpio(this)
         lifecycle.addObserver(observer as LifecycleObserver)
         return observer
     }

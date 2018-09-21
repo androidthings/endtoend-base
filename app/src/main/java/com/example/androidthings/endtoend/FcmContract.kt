@@ -20,8 +20,10 @@ class FcmContract  {
     companion object {
         const val COMMAND_KEY = "cmd"
         const val INDEX_KEY = "index"
-        const val CMD_TOGGLE = "toggle"
+        const val FCM_PAYLOAD_KEY="payload"
 
         const val FCM_INTENT_ACTION = "com.example.androidthings.endtoend.FCM"
+
+        val LEDS = arrayOf("led01", "led02", "led03")
     }
 }

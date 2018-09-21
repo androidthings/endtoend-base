@@ -26,6 +26,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.example.androidthings.endtoend.companion.data.model.ToggleDetail
+import com.example.androidthings.endtoend.companion.R
+
 
 class ToggleListAdapter(
     private val viewModel: GizmoDetailViewModel

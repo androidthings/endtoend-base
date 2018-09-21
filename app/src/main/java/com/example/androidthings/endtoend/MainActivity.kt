@@ -21,10 +21,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.example.androidthings.endtoend.auth.FirebaseDeviceAuthenticator
+import org.json.JSONObject
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,10 +37,18 @@ class MainActivity : AppCompatActivity() {
 
     lateinit var firebaseAuth: FirebaseDeviceAuthenticator
 
+    val listener = object : OnLedStateChangedListener {
+        override fun onStateChanged() {
+            updateFirestore()
+        }
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        gpioManager = GpioManager(lifecycle)
+        gpioManager = GpioManager(lifecycle, listener)
+
         gpioManager.initGpio()
 
         firebaseAuth = FirebaseDeviceAuthenticator()
@@ -48,18 +57,40 @@ class MainActivity : AppCompatActivity() {
         FirestoreManager.init(this)
     }
 
+    fun updateFirestore() {
+        val newStates = arrayOf(gpioManager.leds[0].value,
+            gpioManager.leds[1].value,
+            gpioManager.leds[2].value)
+
+        FirestoreManager.updateGizmoDocState(newStates)
+    }
+
     fun initFcmReceiver() {
         fcmReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent != null) {
-                    val cmd = intent.getStringExtra(FcmContract.COMMAND_KEY)
-                    val index = intent.getIntExtra(FcmContract.INDEX_KEY, 0)
+                    val jsonCommandStr = intent.getStringExtra(FcmContract.COMMAND_KEY)
 
-                    Log.d(TAG, "FcmReceiver saw FCM Message : $cmd $index")
+                    var cmds = JSONObject(jsonCommandStr)
+                        .getJSONArray("inputs")
+                        .getJSONObject(0)
+                        .getJSONObject("payload")
+                        .getJSONArray("commands")
+                        .getJSONObject(0)
+                        .getJSONArray("execution")
+                        .getJSONObject(0)
+                        .getJSONObject("params")
+                        .getJSONObject("updateToggleSettings")
 
-                    if (cmd == FcmContract.CMD_TOGGLE) {
-                        gpioManager.toggleLed(index)
+                    cmds.keys().forEach { key ->
+                        val newState = cmds.getBoolean(key)
+                        val ledIndex= FcmContract.LEDS.indexOf(key)
+                        gpioManager.setLed(ledIndex, newState)
                     }
+
+                    updateFirestore()
+
+
                 }
             }
         }

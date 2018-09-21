@@ -71,7 +71,7 @@ class FirestoreGizmoDao : GizmoDao {
         liveData.postValue(null) // null while loading, to differentiate from empty
 
         val query = firestore.collection(PATH_USERS)
-            .document("google-oauth2|112379635499756325744") // todo use userId
+            .document(userId)
             .collection(PATH_GIZMOS)
         listenerRegistration = query.addSnapshotListener(
             asyncExecutor,

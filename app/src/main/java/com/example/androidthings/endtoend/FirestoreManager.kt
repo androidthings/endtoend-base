@@ -38,11 +38,12 @@ object FirestoreManager {
     private const val firestoreDocIdKey = "docIdKey"
     private const val deviceIdKey = "deviceId"
     private const val fcmTokenKey = "fcmToken"
+    private const val togglesKey = "toggles"
 
     private val pendingData: MutableMap<String, Any> = HashMap()
 
     // todo: get userid info from companion app
-    private const val userId = "google-oauth2|112379635499756325744"
+    private const val userId = "miZjm4sqa5h2FIuzhOnyaq6HKF53"
 
     fun init(context: Context) {
         val docId = context.getSharedPreferences(prefsKey, Context.MODE_PRIVATE)
@@ -64,17 +65,29 @@ object FirestoreManager {
             .document(id)
     }
 
-    private fun createGizmoDoc(context: Context) {
-        val firestore = FirebaseFirestore.getInstance()
+    private fun genToggleList(newVals : Array<Boolean>? = null) : List<Toggle>{
+        return listOf(
+            Toggle(id = FcmContract.LEDS[0], displayName = "Red LED", on = newVals?.get(0) ?: true),
+            Toggle(id = FcmContract.LEDS[1], displayName = "Green LED", on = newVals?.get(1) ?: true),
+            Toggle(id = FcmContract.LEDS[2], displayName = "Blue LED", on = newVals?.get(2) ?: true))
+    }
+
+    private fun generateGizmo(toggles : List<Toggle>? = null) : Gizmo {
         val gizmo = Gizmo()
         gizmo.name = "Magic Rainbow Hat"
         gizmo.nicknames = listOf("Hattie McHatHat")
-        gizmo.toggles = listOf(
-            Toggle(id = "led01", displayName = "Red LED", on = true),
-            Toggle(id = "led02", displayName = "Green LED", on = true),
-            Toggle(id = "led03", displayName = "Blue LED", on = true)
-        )
+        gizmo.toggles = genToggleList()
+
+        gizmo.toggles = toggles ?: genToggleList()
+
+        return gizmo
+    }
+
+    private fun createGizmoDoc(context: Context) {
+        val firestore = FirebaseFirestore.getInstance()
+        val gizmo = generateGizmo()
         gizmo.id = getDeviceId(context)
+
 
         firestore.collection("users")
             .document(userId)
@@ -92,6 +105,25 @@ object FirestoreManager {
             }
             .addOnFailureListener {
                 Log.d(TAG, "Failed!", it)
+            }
+    }
+
+    fun updateGizmoDocState(newVals : Array<Boolean>) {
+
+        val docId = gizmoDocId ?: return
+        val docRef = lookupGizmoDocument(docId)
+
+        val toggles = genToggleList(newVals)
+        val gizmo = generateGizmo(toggles)
+
+        docRef.set(gizmo, SetOptions.mergeFields(togglesKey))
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d(TAG, "Success updating Toggles!")
+
+                } else {
+                    Log.d(TAG, "Error getting documents: ", task.exception)
+                }
             }
     }
 

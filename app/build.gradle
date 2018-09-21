@@ -42,7 +42,7 @@ dependencies {
     compileOnly 'com.google.android.things:androidthings:1.0'
     implementation"org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
-    implementation "androidx.core:core-ktx:$coreKtxVersion"
+    implementation "androidx.core:core-ktx:1.0.0-alpha1"
 
     implementation "androidx.appcompat:appcompat:$appcompatVersion"
     implementation "androidx.lifecycle:lifecycle-common:$lifecycleVersion"
