@@ -43,7 +43,8 @@ object FirestoreManager {
     private val pendingData: MutableMap<String, Any> = HashMap()
 
     // todo: get userid info from companion app
-    private const val userId = "miZjm4sqa5h2FIuzhOnyaq6HKF53"
+    // Run the companion app once and find the userId in firestore, then enter it here.
+    private const val userId = "..."
 
     fun init(context: Context) {
         val docId = context.getSharedPreferences(prefsKey, Context.MODE_PRIVATE)
