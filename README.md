@@ -31,10 +31,10 @@ of low level APIs.
 ## Build and install
 
 There are three components to install, each in a subdirectory of this project.
-- Android Things app : Follow instructions in [app module](./tree/master/app)
-- Android companion app : Follow instructions in [companionApp module](./tree/master/companionApp)
+- Android Things app : Follow instructions in [app module](https://github.com/androidthings/endtoend-base/tree/master/app)
+- Android companion app : Follow instructions in [companionApp module](https://github.com/androidthings/endtoend-base/tree/master/companionApp)
 - Firebase functions (Smarthome integration) : Follow instructions in
-[Firebase module](./tree/master/firebase/functions)
+[Firebase module](https://github.com/androidthings/endtoend-base/tree/master/firebase/functions)
 
 
 ## Enable auto-launch behavior
