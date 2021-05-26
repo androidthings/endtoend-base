@@ -5,6 +5,10 @@ app, and the [Smart Home](https://developers.google.com/actions/smarthome/) APIs
 for communication between the components.  It can be used as a starting point for building
 your own Android projects with Assistant / Smarthome integration.
 
+> **Note:** The Android Things Console will be turned down for non-commercial
+> use on January 5, 2022. For more details, see the
+> [FAQ page](https://developer.android.com/things/faq).
+
 ## Introduction
 
 This sample allows control of an Android Things device with a Rainbow Hat mounted on top.  The user can:
